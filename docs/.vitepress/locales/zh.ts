@@ -158,6 +158,7 @@ export default {
           collapsed: false,
           items: [
             { text: 'Docker 安装', link: '/zh/development/deploy/docker' },
+            { text: 'Super Magic 安装', link: '/zh/development/deploy/super-magic' },
           ]
         },
 
