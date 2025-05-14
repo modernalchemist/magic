@@ -50,10 +50,9 @@ services:
         condition: service_started
     volumes:
        - ./volumes/storage/files:/opt/www/storage/files
-       - ./bin/magic-service/daemon-entrypoint.sh:/opt/www/storage/entrypoint.sh
+       - ./bin/magic-service/daemon-entrypoint.sh:/opt/www/entrypoint.sh
     env_file:
       - .env
-    entrypoint: ["/opt/www/storage/entrypoint.sh"]
     deploy:
       resources:
         limits:

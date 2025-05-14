@@ -415,7 +415,7 @@ start_services() {
     bilingual "正在前台启动服务..." "Starting services in foreground..."
     if [ -f "bin/use_super_magic" ]; then
         # 直接使用profile参数启动
-        docker-compose --profile magic-gateway --profile sandbox-gateway up
+        docker-compose  --profile super-magic --profile  magic-gateway --profile sandbox-gateway up
     else
         docker-compose up
     fi
@@ -425,7 +425,7 @@ start_services() {
 stop_services() {
     bilingual "正在停止服务..." "Stopping services..."
     if [ -f "bin/use_super_magic" ]; then
-        docker-compose --profile magic-gateway --profile sandbox-gateway down
+        docker-compose --profile super-magic --profile  magic-gateway --profile sandbox-gateway down
     else
         docker-compose down
     fi
@@ -435,7 +435,7 @@ stop_services() {
 start_daemon() {
     bilingual "正在后台启动服务..." "Starting services in background..."
     if [ -f "bin/use_super_magic" ]; then
-        docker-compose --profile magic-gateway --profile sandbox-gateway up -d
+        docker-compose --profile super-magic --profile  magic-gateway --profile sandbox-gateway up -d
     else
         docker-compose up -d
     fi
@@ -445,7 +445,7 @@ start_daemon() {
 restart_services() {
     bilingual "正在重启服务..." "Restarting services..."
     if [ -f "bin/use_super_magic" ]; then
-        docker-compose --profile magic-gateway --profile sandbox-gateway restart
+        docker-compose --profile super-magic --profile  magic-gateway --profile sandbox-gateway restart
     else
         docker-compose restart
     fi

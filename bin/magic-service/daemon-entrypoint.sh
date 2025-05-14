@@ -15,5 +15,7 @@ else
     echo "已检测到标记文件，跳过数据库种子命令"
 fi
 
-# 执行原始的启动命令
-exec php bin/hyperf.php start 
+# 启动守护进程服务
+echo "正在启动魔术服务守护进程..."
+php bin/hyperf.php start
+
