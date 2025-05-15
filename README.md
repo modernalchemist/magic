@@ -110,11 +110,11 @@ Teamshare OS has the following core features:
 
 ### Magic Table
 
-https://gist.github.com/user-attachments/assets/7327f331-be7d-4aeb-8e19-0949adde66b2
+https://gist.github.com/user-attachments/assets/6ef46e66-292c-4a8a-8a00-a3b9fb7beec7
 
 ### Magic Doc
 
-https://gist.github.com/user-attachments/assets/6ef46e66-292c-4a8a-8a00-a3b9fb7beec7
+https://gist.github.com/user-attachments/assets/7327f331-be7d-4aeb-8e19-0949adde66b2
 
 ## 🚀 Using Super Magic
 
