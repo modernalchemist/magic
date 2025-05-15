@@ -15,12 +15,6 @@
     <a href="https://github.com/dtyq/magic/releases">
       <img src="https://poser.pugx.org/dtyq/magic/v/stable" alt="Stable Version">
     </a>
-    <a href="https://github.com/dtyq/magic/blob/master/LICENSE">
-      <img src="https://img.shields.io/github/license/dtyq/magic.svg?maxAge=2592000" alt="Magic License">
-    </a>
-    <a href="https://hub.docker.com/u/dtyq" target="_blank">
-      <img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/dtyq/magic-service?labelColor=%20%23FDB062&color=%20%23f79009">
-    </a>
     <a href="https://github.com/dtyq/magic/graphs/commit-activity" target="_blank">
       <img alt="Commits last month" src="https://img.shields.io/github/commit-activity/m/dtyq/magic?labelColor=%20%2332b583&color=%20%2312b76a">
     </a>
@@ -61,7 +55,7 @@ In addition to the above AI products, we have also open-sourced some of the infr
 
 A powerful **general-purpose AI Agent** specially designed for complex task scenarios. Through a multi-agent design system and rich tool capabilities, Super Magic supports intelligent abilities such as **autonomous task understanding**, **autonomous task planning**, **autonomous action**, and **autonomous error correction**. It can understand natural language instructions, execute various business processes, and deliver final target results. As the flagship product of the Magic product matrix, Super Magic provides powerful secondary development capabilities through open source, allowing enterprises to quickly build and deploy intelligent assistants that meet specific business needs, greatly improving decision-making efficiency and quality.
 
-![Super Magic](https://www.letsmagic.cn/web/images/hero-image-zh-light.jpg)
+![Super Magic](https://cdn.letsmagic.cn/static/img/super-magic-buffett.gif)
 
 #### Super Magic Case Studies
 - [Warren Buffett's 2025 Shareholder Meeting Investment Insights Analysis](https://www.letsmagic.ai/share/777665156986277889)
@@ -82,7 +76,7 @@ Magic Flow is a powerful visual AI workflow orchestration system that allows use
 - **Custom Extensions**: Support for custom tool node development to meet specific business scenario requirements.
 - **Real-time Debugging and Monitoring**: Providing comprehensive debugging and monitoring functions to help quickly identify and solve problems in workflows, ensuring stable operation of AI applications.
 
-![Magic Flow](https://cdn.letsmagic.cn/static/img/showmagic.jpg)
+![Magic Flow](https://cdn.letsmagic.cn/static/img/magic-flow.png)
 
 As an important component of the Magic product matrix, Magic Flow can be seamlessly integrated with other Magic products to create a complete enterprise-level AI application ecosystem.
 
