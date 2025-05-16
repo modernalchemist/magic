@@ -128,7 +128,7 @@ https://gist.github.com/user-attachments/assets/7327f331-be7d-4aeb-8e19-0949adde
 我们为团队和企业提供了更强大的管理能力和功能，可[给我们发送电子邮件](mailto:bd@dtyq.com?subject=[GitHub]Business%20License%20Inquiry)讨论企业需求。
 
 ### 自托管社区版
-  
+
 #### 系统要求
 - Docker 24.0+
 - Docker Compose 2.0+
@@ -156,6 +156,22 @@ cd magic
 # 查看日志
 ./bin/magic.sh logs
 ```
+
+##### 配置环境变量
+
+```bash
+# 配置magic 环境变量, 必须配置任意一种大模型的环境变量才可正常使用magic
+cp .env.example .env
+
+
+# 配置超级麦吉 环境变量,必须配置任意一种支持openai 格式的大模型环境变量, 才可正常使用使用
+./bin/magic.sh status
+cp config/.env_super_magic.example .env_super_magic
+
+```
+
+
+
 ##### 访问服务
 - API 服务: http://localhost:9501
 - Web 应用: http://localhost:8080
@@ -164,10 +180,10 @@ cd magic
 - RabbitMQ 管理界面: http://localhost:15672
   - 用户名: admin
   - 密码: magic123456
-  
+
 ## 📚 官网与文档
 
-官网 [https://www.letsmagic.cn](https://www.letsmagic.cn)   
+官网 [https://www.letsmagic.cn](https://www.letsmagic.cn)
 文档 [https://docs.letsmagic.cn/zh](https://docs.letsmagic.cn/zh)
 
 ## 贡献

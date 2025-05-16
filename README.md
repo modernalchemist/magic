@@ -128,7 +128,7 @@ We provide [cloud services](https://www.letsmagic.ai) for [Super Magic](https://
 We provide more powerful management capabilities and features for teams and enterprises. [Send us an email](mailto:bd@dtyq.com?subject=[GitHub]Business%20License%20Inquiry) to discuss enterprise needs.
 
 ### Self-hosted Community Edition
-  
+
 #### System Requirements
 - Docker 24.0+
 - Docker Compose 2.0+
@@ -156,6 +156,18 @@ cd magic
 # View logs
 ./bin/magic.sh logs
 ```
+
+##### Configure Environment Variables
+
+```bash
+# Configure Magic environment variables, must configure at least one large language model's environment variables to use Magic normally
+cp .env.example .env
+
+# Configure Super Magic environment variables, must configure any large language model that supports OpenAI format to use it normally
+./bin/magic.sh status
+cp config/.env_super_magic.example .env_super_magic
+```
+
 ##### Access Services
 - API Service: http://localhost:9501
 - Web Application: http://localhost:8080
@@ -166,7 +178,7 @@ cd magic
   - Password: magic123456
 
 
-Official Website: [https://www.letsmagic.ai](https://www.letsmagic.ai)   
+Official Website: [https://www.letsmagic.ai](https://www.letsmagic.ai)
 Documentation: [https://docs.letsmagic.cn/en](https://docs.letsmagic.cn/en)
 
 ## Contribution
