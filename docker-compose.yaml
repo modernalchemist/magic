@@ -132,6 +132,7 @@ services:
     volumes:
       - ./config/.env_super_magic:/app/.env.agent
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/config.yaml:/app/config/config.yaml
     env_file:
       - config/.env_sandbox_gateway
     networks:

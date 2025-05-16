@@ -312,6 +312,19 @@ class SandboxService:
                     logger.warning(f"Agent环境文件{settings.agent_env_file_path}存在但未读取到任何环境变量")
                 
                 # 创建并启动容器
+                # 挂载配置文件,判断/app/config/config.yaml是否存在
+                config_file_path = "/app/config/config.yaml"
+                if os.path.exists(config_file_path):
+                    volumes = {
+                        config_file_path: {
+                            'bind': '/app/config/config.yaml',
+                            'mode': 'rw'
+                        }
+                    }
+                else:
+                    volumes = {}
+
+                # 挂载配置文件
                 container = self.docker_client.containers.run(
                     self.image_name,
                     detach=True,
@@ -321,7 +334,8 @@ class SandboxService:
                         AGENT_LABEL: sandbox_id,
                         SANDBOX_LABEL: sandbox_id
                     },
-                    network=self.network_name  # 使用与网关相同的网络
+                    network=self.network_name,  # 使用与网关相同的网络
+                    volumes=volumes
                 )
                 logger.info(f"容器已创建: {container.name}，使用网络: {self.network_name}")
             
