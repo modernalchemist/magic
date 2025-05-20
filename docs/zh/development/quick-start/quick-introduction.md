@@ -74,7 +74,7 @@ Windows系统可以不使用 magic.sh 脚本，直接使用 docker compose命令
 
 ```bash
 # 创建必要的网络
-docker network create sandbox-network
+docker network create magic-sandbox-network
 
 # 启动基本服务
 docker compose up
@@ -102,9 +102,9 @@ docker compose --profile magic-gateway --profile sandbox-gateway up
 - 选择 2 表示远程服务器部署（会检测公网IP并询问是否使用）
 ![部署方式选择](https://public-cdn.letsmagic.cn/static/img/chose_development_method.png)
 
-- 提示: 脚本会判断本地是否已经创建了sandbox-network，如果没有会自动执行一次
+- 提示: 脚本会判断本地是否已经创建了magic-sandbox-network，如果没有会自动执行一次
 ```bash
-docker network create sandbox-network
+docker network create magic-sandbox-network
 ```
 
 ##### Super Magic 服务安装
@@ -314,7 +314,7 @@ sudo systemctl start docker
 
 2. 移除 Docker 网络（如有需要）
    ```bash
-   docker network rm sandbox-network
+   docker network rm magic-sandbox-network
    ```
 
 3. 删除持久化文件目录 ./volumes
