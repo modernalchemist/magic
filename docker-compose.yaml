@@ -107,7 +107,7 @@ services:
       - "8001:8001"
     depends_on:
       redis:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - ./config/.env_magic_gateway:/app/.env
     env_file:
@@ -122,6 +122,8 @@ services:
     #restart: always
     profiles:
       - sandbox-gateway
+    environment:
+      SUPER_MAGIC_CONFIG_FILE_PATH: ${SUPER_MAGIC_CONFIG_FILE_PATH-${PWD}/config/config.yaml}
     depends_on:
       qdrant:
         condition: service_started

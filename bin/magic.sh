@@ -303,6 +303,65 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
             return 0
         fi
 
+        # Ask if domain name is needed
+        bilingual "是否需要使用域名访问?" "Do you need to use a domain name for access?"
+        read -p "$(bilingual "请输入 [y/n]: " "Please enter [y/n]: ")" USE_DOMAIN
+
+        if [[ "$USE_DOMAIN" =~ ^[Yy]$ ]]; then
+            read -p "$(bilingual "请输入域名地址(不含http/https前缀): " "Please enter domain address (without http/https prefix): ")" DOMAIN_ADDRESS
+
+            if [ -n "$DOMAIN_ADDRESS" ]; then
+                bilingual "正在使用域名: $DOMAIN_ADDRESS 更新环境变量..." "Updating environment variables with domain: $DOMAIN_ADDRESS..."
+
+                # Update MAGIC_SOCKET_BASE_URL and MAGIC_SERVICE_BASE_URL
+                if [ "$(uname -s)" == "Darwin" ]; then
+                    # macOS version
+                    sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS:9502|" .env
+                    sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS:9501|" .env
+                    # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
+                    sed -i '' "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$DOMAIN_ADDRESS/files|" .env
+                    sed -i '' "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$DOMAIN_ADDRESS|" .env
+                else
+                    # Linux version
+                    sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS:9502|" .env
+                    sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS:9501|" .env
+                    # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
+                    sed -i "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$DOMAIN_ADDRESS/files|" .env
+                    sed -i "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$DOMAIN_ADDRESS|" .env
+                fi
+
+                bilingual "环境变量已更新:" "Environment variables updated:"
+                echo "MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS:9502"
+                echo "MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS:9501"
+                echo "FILE_LOCAL_READ_HOST=http://$DOMAIN_ADDRESS/files"
+                echo "FILE_LOCAL_WRITE_HOST=http://$DOMAIN_ADDRESS"
+
+                # 更新Caddyfile中的域名
+                bilingual "更新Caddyfile配置..." "Updating Caddyfile configuration..."
+
+                # 检查Caddyfile是否存在
+                if [ -f "bin/caddy/Caddyfile" ]; then
+                    # 在Caddyfile文件顶部添加域名
+                    if [ "$(uname -s)" == "Darwin" ]; then
+                        # macOS version
+                        sed -i '' "s|^# 文件服务\n:80 {|# 文件服务\n$DOMAIN_ADDRESS:80 {|" bin/caddy/Caddyfile
+                    else
+                        # Linux version
+                        sed -i "s|^# 文件服务\n:80 {|# 文件服务\n$DOMAIN_ADDRESS:80 {|" bin/caddy/Caddyfile
+                    fi
+                    bilingual "已更新Caddyfile配置，使用域名: $DOMAIN_ADDRESS" "Updated Caddyfile configuration with domain: $DOMAIN_ADDRESS"
+                else
+                    bilingual "未找到Caddyfile，跳过更新" "Caddyfile not found, skipping update"
+                fi
+
+                return 0
+            else
+                bilingual "域名为空，继续使用公网IP配置。" "Domain is empty, continuing with public IP configuration."
+            fi
+        else
+            bilingual "不使用域名，继续使用公网IP配置。" "Not using domain, continuing with public IP configuration."
+        fi
+
         bilingual "正在检测公网IP..." "Detecting public IP..."
 
         # Try multiple methods to get public IP
@@ -332,6 +391,14 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
             fi
         fi
 
+        # Method 4: Using checkip.amazonaws.com
+        if [ -z "$PUBLIC_IP" ]; then
+            PUBLIC_IP=$(curl -s https://checkip.amazonaws.com 2>/dev/null)
+            if [ -z "$PUBLIC_IP" ] || [[ $PUBLIC_IP == *"html"* ]]; then
+                PUBLIC_IP=""
+            fi
+        fi
+
         # If successfully obtained public IP, ask user whether to use this IP
         if [ -n "$PUBLIC_IP" ]; then
             bilingual "检测到公网IP: $PUBLIC_IP" "Detected public IP: $PUBLIC_IP"
@@ -346,15 +413,41 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                     # macOS version
                     sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502|" .env
                     sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP:9501|" .env
+                    # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
+                    sed -i '' "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files|" .env
+                    sed -i '' "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$PUBLIC_IP|" .env
                 else
                     # Linux version
                     sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502|" .env
                     sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP:9501|" .env
+                    # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
+                    sed -i "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files|" .env
+                    sed -i "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$PUBLIC_IP|" .env
                 fi
 
                 bilingual "环境变量已更新:" "Environment variables updated:"
                 echo "MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502"
                 echo "MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP:9501"
+                echo "FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files"
+                echo "FILE_LOCAL_WRITE_HOST=http://$PUBLIC_IP"
+
+                # 更新Caddyfile中的IP
+                bilingual "更新Caddyfile配置..." "Updating Caddyfile configuration..."
+
+                # 检查Caddyfile是否存在
+                if [ -f "bin/caddy/Caddyfile" ]; then
+                    # 在Caddyfile文件顶部添加公网IP
+                    if [ "$(uname -s)" == "Darwin" ]; then
+                        # macOS version
+                        sed -i '' "s|^# 文件服务\n:80 {|# 文件服务\n$PUBLIC_IP:80 {|" bin/caddy/Caddyfile
+                    else
+                        # Linux version
+                        sed -i "s|^# 文件服务\n:80 {|# 文件服务\n$PUBLIC_IP:80 {|" bin/caddy/Caddyfile
+                    fi
+                    bilingual "已更新Caddyfile配置，使用公网IP: $PUBLIC_IP" "Updated Caddyfile configuration with public IP: $PUBLIC_IP"
+                else
+                    bilingual "未找到Caddyfile，跳过更新" "Caddyfile not found, skipping update"
+                fi
             else
                 bilingual "保持默认设置。" "Keeping default settings."
             fi
@@ -374,15 +467,41 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                         # macOS version
                         sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502|" .env
                         sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS:9501|" .env
+                        # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
+                        sed -i '' "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files|" .env
+                        sed -i '' "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$MANUAL_IP_ADDRESS|" .env
                     else
                         # Linux version
                         sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502|" .env
                         sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS:9501|" .env
+                        # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
+                        sed -i "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files|" .env
+                        sed -i "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$MANUAL_IP_ADDRESS|" .env
                     fi
 
                     bilingual "环境变量已更新:" "Environment variables updated:"
                     echo "MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502"
                     echo "MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS:9501"
+                    echo "FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files"
+                    echo "FILE_LOCAL_WRITE_HOST=http://$MANUAL_IP_ADDRESS"
+
+                    # 更新Caddyfile中的手动输入IP
+                    bilingual "更新Caddyfile配置..." "Updating Caddyfile configuration..."
+
+                    # 检查Caddyfile是否存在
+                    if [ -f "bin/caddy/Caddyfile" ]; then
+                        # 在Caddyfile文件顶部添加手动输入IP
+                        if [ "$(uname -s)" == "Darwin" ]; then
+                            # macOS version
+                            sed -i '' "s|^# 文件服务\n:80 {|# 文件服务\n$MANUAL_IP_ADDRESS:80 {|" bin/caddy/Caddyfile
+                        else
+                            # Linux version
+                            sed -i "s|^# 文件服务\n:80 {|# 文件服务\n$MANUAL_IP_ADDRESS:80 {|" bin/caddy/Caddyfile
+                        fi
+                        bilingual "已更新Caddyfile配置，使用手动输入IP: $MANUAL_IP_ADDRESS" "Updated Caddyfile configuration with manually entered IP: $MANUAL_IP_ADDRESS"
+                    else
+                        bilingual "未找到Caddyfile，跳过更新" "Caddyfile not found, skipping update"
+                    fi
                 else
                     bilingual "IP地址为空，保持默认设置。" "IP address is empty, keeping default settings."
                 fi

@@ -313,15 +313,17 @@ class SandboxService:
 
                 # 创建并启动容器
                 # 挂载配置文件,判断/app/config/config.yaml是否存在
-                config_file_path = "/Users/rockli/go/src/github/magic/config/config.yaml"
-                if os.path.exists(config_file_path):
+                config_file_path = os.environ.get("SUPER_MAGIC_CONFIG_FILE_PATH")
+                if config_file_path:
                     volumes = {
                         config_file_path: {
                             'bind': '/app/config/config.yaml',
                             'mode': 'rw'
                         }
                     }
+                    logger.info(f"使用配置文件: {config_file_path}")
                 else:
+                    logger.warning(f"SUPER_MAGIC_CONFIG_FILE_PATH 配置文件不存在: {config_file_path}")
                     volumes = {}
 
                 # 挂载配置文件
