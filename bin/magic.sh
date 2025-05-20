@@ -169,7 +169,6 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
         exit 1
     fi
 
-<<<<<<< HEAD
     # 检查magic-sandbox-network网络是否存在，如果不存在则创建
     if ! docker network inspect magic-sandbox-network &> /dev/null; then
         bilingual "网络 magic-sandbox-network 不存在，正在创建..." "Network magic-sandbox-network does not exist, creating..."
@@ -177,15 +176,6 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
         bilingual "网络 magic-sandbox-network 已创建。" "Network magic-sandbox-network has been created."
     else
         bilingual "网络 magic-sandbox-network 已存在，跳过创建。" "Network magic-sandbox-network already exists, skipping creation."
-=======
-    # 检查sandbox-network网络是否存在，如果不存在则创建
-    if ! docker network inspect sandbox-network &> /dev/null; then
-        bilingual "网络 sandbox-network 不存在，正在创建..." "Network sandbox-network does not exist, creating..."
-        docker network create sandbox-network
-        bilingual "网络 sandbox-network 已创建。" "Network sandbox-network has been created."
-    else
-        bilingual "网络 sandbox-network 已存在，跳过创建。" "Network sandbox-network already exists, skipping creation."
->>>>>>> 20efb0c (在magic.sh中添加检查和创建sandbox-network网络的功能，确保在安装过程中网络存在。)
     fi
 
     # Check if docker compose is installed
