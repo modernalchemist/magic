@@ -93,6 +93,24 @@ else
     SKIP_INSTALLATION=false
 fi
 
+# 检查并更新SANDBOX_NETWORK参数
+check_sandbox_network() {
+    if [ -f "config/.env_sandbox_gateway" ]; then
+        CURRENT_NETWORK=$(grep "^SANDBOX_NETWORK=" config/.env_sandbox_gateway | cut -d'=' -f2)
+        if [ "$CURRENT_NETWORK" != "magic-sandbox-network" ]; then
+            bilingual "检测到SANDBOX_NETWORK参数值不是magic-sandbox-network，正在更新..." "Detected SANDBOX_NETWORK value is not magic-sandbox-network, updating..."
+            if [ "$(uname -s)" == "Darwin" ]; then
+                # macOS version
+                sed -i '' "s/^SANDBOX_NETWORK=.*/SANDBOX_NETWORK=magic-sandbox-network/" config/.env_sandbox_gateway
+            else
+                # Linux version
+                sed -i "s/^SANDBOX_NETWORK=.*/SANDBOX_NETWORK=magic-sandbox-network/" config/.env_sandbox_gateway
+            fi
+            bilingual "已更新SANDBOX_NETWORK参数值为magic-sandbox-network" "Updated SANDBOX_NETWORK value to magic-sandbox-network"
+        fi
+    fi
+}
+
 # Let the user choose the language only if not skipped
 if [ "$SKIP_LANGUAGE_SELECTION" = "false" ]; then
   choose_language() {
@@ -540,6 +558,9 @@ show_help() {
 
 # Start services
 start_services() {
+    # 检查并更新SANDBOX_NETWORK参数
+    check_sandbox_network
+
     bilingual "正在前台启动服务..." "Starting services in foreground..."
     if [ -f "bin/use_super_magic" ]; then
         # 直接使用profile参数启动
@@ -561,6 +582,9 @@ stop_services() {
 
 # Start services in background
 start_daemon() {
+    # 检查并更新SANDBOX_NETWORK参数
+    check_sandbox_network
+
     bilingual "正在后台启动服务..." "Starting services in background..."
     if [ -f "bin/use_super_magic" ]; then
         docker compose --profile super-magic --profile  magic-gateway --profile sandbox-gateway up -d
@@ -571,6 +595,9 @@ start_daemon() {
 
 # Restart services
 restart_services() {
+    # 检查并更新SANDBOX_NETWORK参数
+    check_sandbox_network
+
     bilingual "正在重启服务..." "Restarting services..."
     if [ -f "bin/use_super_magic" ]; then
         docker compose --profile super-magic --profile  magic-gateway --profile sandbox-gateway restart
@@ -593,6 +620,9 @@ show_logs() {
 
 # Start only Super Magic service
 start_super_magic() {
+    # 检查并更新SANDBOX_NETWORK参数
+    check_sandbox_network
+
     # Check if .env_super_magic exists
     if ! check_super_magic_env; then
         exit 1
@@ -617,6 +647,9 @@ start_super_magic() {
 
 # Start only Super Magic service in background
 start_super_magic_daemon() {
+    # 检查并更新SANDBOX_NETWORK参数
+    check_sandbox_network
+
     # Check if .env_super_magic exists
     if ! check_super_magic_env; then
         exit 1
