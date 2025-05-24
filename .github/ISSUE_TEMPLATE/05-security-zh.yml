@@ -1,0 +1,198 @@
+name: 🔒 安全问题 / Security Issue
+description: 报告安全漏洞（关键问题请私下披露）
+title: "[安全]: "
+labels: ["security", "high-priority", "zh-cn"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **⚠️ 重要安全提示 ⚠️**
+        
+        如果您认为发现了**关键安全漏洞**，请**不要**创建公开issue。
+        请发送邮件到**dev@dtyq.com**，邮件主题为"[安全]漏洞报告"。
+        
+        此模板用于**非关键安全问题**或可以公开讨论的安全改进建议。
+        
+        **非关键安全问题示例：**
+        - 缺少安全头
+        - 过时的依赖项
+        - 安全最佳实践改进
+        - 文档安全问题
+        
+        **关键安全问题示例（请使用私人邮件）：**
+        - 身份验证绕过
+        - SQL注入
+        - 远程代码执行
+        - 数据泄露漏洞
+
+  - type: checkboxes
+    id: security-severity
+    attributes:
+      label: 安全问题严重程度
+      description: 请确认这不是关键安全漏洞
+      options:
+        - label: 这不是可能危及用户数据或系统安全的关键安全漏洞
+          required: true
+        - label: 我理解关键漏洞应私下报告给dev@dtyq.com
+          required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 组件模块
+      description: 此安全问题影响哪个组件/模块？
+      options:
+        - Super Magic (AI智能体)
+        - Magic IM (聊天系统)
+        - Magic Flow (工作流系统)
+        - Magic Service (后端API)
+        - Magic Web (前端界面)
+        - Magic Gateway (网关)
+        - 身份验证系统
+        - 授权/权限
+        - 数据存储/处理
+        - API端点
+        - 文件上传/处理
+        - 依赖项
+        - 文档
+        - 部署/配置
+        - 其他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: security-type
+    attributes:
+      label: 安全问题类型
+      description: 这是什么类型的安全问题或改进？
+      options:
+        - 缺少安全头
+        - 过时的依赖项
+        - 不安全的默认配置
+        - 输入验证不足
+        - 信息泄露（非敏感）
+        - 跨站脚本（XSS）- 轻微
+        - 缺少安全文档
+        - 安全最佳实践改进
+        - 限流问题
+        - 会话管理改进
+        - 其他安全增强
+    validations:
+      required: true
+
+  - type: textarea
+    id: security-description
+    attributes:
+      label: 安全问题描述
+      description: 描述需要的安全问题或改进
+      placeholder: |
+        - 安全关注点是什么？
+        - 潜在影响可能是什么？
+        - 您建议什么安全改进？
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 重现步骤（如适用）
+      description: 如果这是可演示的安全问题，请提供重现步骤
+      placeholder: |
+        1. 进入 '...'
+        2. 执行操作 '...'
+        3. 观察安全问题
+        
+        注意：请不要包含关键漏洞的实际利用步骤
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: 影响评估
+      description: 此安全问题的潜在影响是什么？
+      placeholder: |
+        - 谁可能受到影响？
+        - 什么数据或功能可能面临风险？
+        - 被利用的可能性有多大？
+        - 潜在后果是什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: 建议修复
+      description: 如果您对如何修复此安全问题有建议，请分享
+      placeholder: |
+        - 推荐的安全措施
+        - 配置更改
+        - 代码改进
+        - 要实施的最佳实践
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息
+      description: 请提供观察到此安全问题的环境详情
+      placeholder: |
+        - Magic版本：[如 v1.0.0]
+        - 部署方式：[如 Docker, 云, 自托管]
+        - 配置：[相关安全设置]
+        - 浏览器：[如果前端相关]
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: 安全参考
+      description: 包含任何相关的安全参考或标准
+      placeholder: |
+        - OWASP指南
+        - CVE参考
+        - 安全最佳实践文档
+        - 其他项目中的类似安全问题
+    validations:
+      required: false
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: 紧急程度
+      description: 此安全问题有多紧急？
+      options:
+        - 低 - 未来考虑的安全增强
+        - 中 - 应在即将发布的版本中解决
+        - 高 - 应优先考虑安全性
+        - 紧急 - 需要立即关注（但不是关键）
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: 添加有关安全问题的任何其他信息
+      placeholder: |
+        - 截图（敏感信息已编辑）
+        - 相关安全讨论
+        - 行业标准或合规要求
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 最终检查清单
+      description: 请确认以下事项
+      options:
+        - label: 我已确认这不是关键安全漏洞
+          required: true
+        - label: 我已提供了关于安全关注点的充分细节
+          required: true
+        - label: 我理解安全问题会被认真对待并得到适当处理
+          required: true 

@@ -1,0 +1,268 @@
+name: 🔌 API/集成问题 / API Integration Issue
+description: 报告API、集成或第三方连接问题
+title: "[API]: "
+labels: ["api", "integration", "needs-review", "zh-cn"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您报告API或集成问题！这有助于我们改进Magic的连接性和可扩展性。
+        
+        **提交API/集成问题前，请先：**
+        - 检查[API文档](https://docs.letsmagic.cn/zh)以确保正确使用
+        - 验证您的API凭据和配置
+        - 如果适用，测试不同的API端点
+
+  - type: dropdown
+    id: api-type
+    attributes:
+      label: API/集成类型
+      description: 受影响的是什么类型的API或集成？
+      options:
+        - Magic Service REST API
+        - Magic Gateway API
+        - WebSocket连接
+        - 第三方AI模型集成
+        - 数据库集成
+        - 文件存储集成
+        - 身份验证/OAuth集成
+        - Webhook集成
+        - 外部服务API
+        - SDK/库集成
+        - 其他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 组件模块
+      description: 涉及哪个Magic组件？
+      options:
+        - Super Magic (AI智能体)
+        - Magic IM (聊天系统)
+        - Magic Flow (工作流系统)
+        - Magic Service (后端API)
+        - Magic Web (前端界面)
+        - Magic Gateway (网关)
+        - Agentlang框架
+        - 身份验证系统
+        - 文件管理
+        - 模型管理
+        - 工作流执行
+        - 其他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: 问题类型
+      description: 您遇到的是什么类型的API/集成问题？
+      options:
+        - API端点无法工作
+        - 身份验证/授权失败
+        - 响应格式不正确
+        - 缺少API文档
+        - 限流问题
+        - 连接超时
+        - 集成配置问题
+        - 第三方服务兼容性
+        - SDK/库bug
+        - WebSocket连接问题
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: api-endpoint
+    attributes:
+      label: API端点/集成详情
+      description: 指定API端点或集成详情
+      placeholder: |
+        - API端点：POST /api/v1/chat/messages
+        - 集成：OpenAI GPT-4 API
+        - SDK版本：magic-sdk v1.0.0
+        - 第三方服务：[服务名称和版本]
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: 问题描述
+      description: 描述您遇到的API/集成问题
+      placeholder: |
+        - 哪个特定的API调用或集成失败了？
+        - 您收到什么错误消息？
+        - 此问题何时开始出现？
+    validations:
+      required: true
+
+  - type: textarea
+    id: request-details
+    attributes:
+      label: 请求详情
+      description: 提供API请求或集成尝试的详情
+      placeholder: |
+        HTTP方法：POST
+        请求头：
+        ```
+        Content-Type: application/json
+        Authorization: Bearer <token>
+        ```
+        
+        请求体：
+        ```json
+        {
+          "message": "你好",
+          "user_id": "12345"
+        }
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: response-details
+    attributes:
+      label: 响应详情
+      description: 提供API响应或错误的详情
+      placeholder: |
+        状态码：500
+        
+        响应头：
+        ```
+        Content-Type: application/json
+        ```
+        
+        响应体：
+        ```json
+        {
+          "error": "内部服务器错误",
+          "message": "数据库连接失败"
+        }
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: 期望行为
+      description: API/集成应该做什么？
+      placeholder: |
+        - 期望的状态码
+        - 期望的响应格式
+        - 期望的集成行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 重现步骤
+      description: 重现API/集成问题的详细步骤
+      placeholder: |
+        1. 配置与[服务]的集成
+        2. 调用[端点]API
+        3. 提供[参数]
+        4. 观察错误响应
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: 配置详情
+      description: 提供相关配置信息（请隐藏敏感数据）
+      placeholder: |
+        环境变量：
+        - MAGIC_API_URL=https://api.example.com
+        - MODEL_PROVIDER=openai
+        - [其他相关配置]
+        
+        集成设置：
+        - [相关设置]
+        
+        注意：请隐藏API密钥等敏感信息
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息
+      description: 请提供环境详情
+      placeholder: |
+        - Magic版本：[如 v1.0.0]
+        - 部署方式：[如 Docker, 云, 自托管]
+        - 编程语言/SDK：[如 Python 3.9, magic-sdk v1.0.0]
+        - 操作系统：[如 macOS 14.0, Ubuntu 22.04]
+        - 网络：[如 企业防火墙, VPN等]
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志和错误消息
+      description: 包含相关日志、错误消息或调试信息
+      placeholder: |
+        ```
+        [2024-01-01 10:00:00] ERROR: 连接API失败
+        [2024-01-01 10:00:01] DEBUG: 重试第1次，共3次
+        ```
+    validations:
+      required: false
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: 问题频率
+      description: 此问题发生的频率如何？
+      options:
+        - 总是 - 每次API调用都失败
+        - 频繁 - 大部分API调用失败
+        - 有时 - 间歇性失败
+        - 很少 - 偶尔失败
+        - 一次 - 单次发生
+    validations:
+      required: true
+
+  - type: textarea
+    id: workarounds
+    attributes:
+      label: 解决方法
+      description: 您是否找到了此问题的任何解决方法？
+      placeholder: 您尝试过的任何临时解决方案或替代方法
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: 添加有关API/集成问题的任何其他信息
+      placeholder: |
+        - 网络架构详情
+        - 相关第三方服务问题
+        - 问题开始的时间线
+        - 对您的应用程序/工作流的影响
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 检查清单
+      description: 请确认以下事项
+      options:
+        - label: 我已检查API文档以确保正确使用
+          required: true
+        - label: 我已验证了我的配置和凭据
+          required: true
+        - label: 我已提供足够的详情来重现问题
+          required: true
+        - label: 我已从报告中隐藏了敏感信息
+          required: true 
