@@ -20,11 +20,11 @@ body:
       label: 组件模块
       description: 哪个组件/模块受到影响？
       options:
-        - Super Magic (AI智能体)
-        - Magic IM (聊天系统)
-        - Magic Flow (工作流系统)
+        - Super Magic (超级麦吉)
+        - Magic IM (聊天模块)
+        - Magic Flow (AI 工作流)
         - Magic Service (后端API)
-        - Magic Web (前端界面)
+        - Magic Web (前端)
         - Magic Gateway (网关)
         - 文档
         - 部署/安装

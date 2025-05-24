@@ -20,9 +20,9 @@ body:
       label: Component
       description: Which component/module is affected?
       options:
-        - Super Magic (AI Agent)
-        - Magic IM (Chat System)
-        - Magic Flow (Workflow System)
+        - Super Magic (Super Magic)
+        - Magic IM (IM Module)
+        - Magic Flow (AI Workflow)
         - Magic Service (Backend API)
         - Magic Web (Frontend)
         - Magic Gateway
