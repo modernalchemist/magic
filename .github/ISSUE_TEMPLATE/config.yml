@@ -3,9 +3,6 @@ contact_links:
   - name: 📖 Documentation
     url: https://docs.letsmagic.cn/en
     about: Check our documentation for usage guides and API references
-  - name: 💬 Discussions
-    url: https://github.com/dtyq/magic/discussions
-    about: Ask questions and discuss ideas with the community
   - name: 🌐 Official Website
     url: https://www.letsmagic.ai
     about: Visit our official website for more information
