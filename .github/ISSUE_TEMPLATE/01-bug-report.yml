@@ -40,8 +40,9 @@ body:
       options:
         - Self-hosted (Docker)
         - Self-hosted (Source)
-        - Cloud Service
-        - Development Environment
+        - Chinese Site (https://www.letsmagic.cn)
+        - International Site (https://www.letsmagic.ai)
+        - Other
     validations:
       required: true
 
