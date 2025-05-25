@@ -45,7 +45,7 @@ Use this template to report performance problems or suggest optimizations.
 ### 🔒 Security Issue (`05-security.yml`)
 Use this template to report non-critical security issues.
 
-**⚠️ IMPORTANT:** For critical security vulnerabilities, email dev@dtyq.com directly instead of creating a public issue.
+**⚠️ IMPORTANT:** For critical security vulnerabilities, email team@dtyq.com directly instead of creating a public issue.
 
 **When to use:**
 - Missing security headers
