@@ -1,14 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 📖 文档中心 / Documentation
-    url: https://docs.letsmagic.cn/zh
-    about: 查看使用指南和API参考文档 | Check our documentation for usage guides and API references
-  - name: 💬 社区讨论 / Discussions
+  - name: 📖 Documentation
+    url: https://docs.letsmagic.cn/en
+    about: Check our documentation for usage guides and API references
+  - name: 💬 Discussions
     url: https://github.com/dtyq/magic/discussions
-    about: 提问和讨论想法 | Ask questions and discuss ideas with the community
-  - name: 🌐 官方网站 / Official Website
+    about: Ask questions and discuss ideas with the community
+  - name: 🌐 Official Website
     url: https://www.letsmagic.ai
-    about: 访问官方网站了解更多信息 | Visit our official website for more information
-  - name: 📧 企业支持 / Enterprise Support
-    url: mailto:bd@dtyq.com?subject=[GitHub]企业支持咨询
-    about: 联系企业支持和许可咨询 | Contact us for enterprise support and licensing 
+    about: Visit our official website for more information
+  - name: 📧 Enterprise Support
+    url: mailto:bd@dtyq.com?subject=[GitHub]Enterprise%20Support%20Inquiry
+    about: Contact us for enterprise support and licensing 

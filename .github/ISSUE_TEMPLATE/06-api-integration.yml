@@ -40,7 +40,7 @@ body:
       label: Component
       description: Which Magic component is involved?
       options:
-        - Super Magic (AI Agent)
+        - Super Magic
         - Magic IM (Chat System)
         - Magic Flow (Workflow System)
         - Magic Service (Backend API)

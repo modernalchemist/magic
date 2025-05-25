@@ -39,7 +39,7 @@ body:
       label: Component
       description: Which component/module does this documentation relate to?
       options:
-        - Super Magic (AI Agent)
+        - Super Magic
         - Magic IM (Chat System)
         - Magic Flow (Workflow System)
         - Magic Service (Backend API)
