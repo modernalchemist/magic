@@ -2,10 +2,6 @@
 
 This directory contains issue templates for the Magic project to help you report issues and request features effectively.
 
-## Language Options
-
-**🇨🇳 中文用户 Chinese Users**: 我们提供中文版本的issue模板！请查看 [README-zh.md](README-zh.md) 或直接使用 `-zh.yml` 结尾的模板文件。
-
 **🇺🇸 English Users**: Use the templates below without the `-zh` suffix.
 
 ## Available Templates
