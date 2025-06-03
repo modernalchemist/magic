@@ -1074,7 +1074,6 @@ class ServiceProviderDomainService
     }
 
     /**
-     * @param ServiceProviderCategory $category
      * @return ServiceProviderModelsEntity[]
      */
     public function getOfficeModels(ServiceProviderCategory $category): array
@@ -1085,7 +1084,6 @@ class ServiceProviderDomainService
 
         return $this->serviceProviderModelsRepository->getActiveModelsByConfigIds($serviceProviderConfigIds);
     }
-
 
     /**
      * 获取官方的激活模型配置（支持返回多个）.
