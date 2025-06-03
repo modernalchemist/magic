@@ -1123,7 +1123,6 @@ class LLMAppService extends AbstractLLMAppService
         ];
     }
 
-
     /**
      * 计算宽高比例的字符串格式.
      * @param int $width 宽度
