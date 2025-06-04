@@ -102,7 +102,7 @@ class LLMAppService extends AbstractLLMAppService
             $model = $odinModel->getModel();
 
             $modelConfigEntity = new ModelConfigEntity();
-            
+
             // Determine object type based on model type
             $isImageModel = $model instanceof ImageGenerationModel;
             $objectType = $isImageModel ? 'image' : 'model';
@@ -253,6 +253,38 @@ class LLMAppService extends AbstractLLMAppService
         if (empty($serviceProviderConfigs)) {
             ExceptionBuilder::throw(ServiceProviderErrorCode::ModelNotFound);
         }
+
+        $imageGenerateRequest = ImageGenerateFactory::createRequestType($imageGenerateType, $imageGenerateParamsVO->toArray());
+
+        foreach ($serviceProviderConfigs as $serviceProviderConfig) {
+            $imageGenerateService = ImageGenerateFactory::create($imageGenerateType, $serviceProviderConfig);
+            try {
+                $generateImageRaw = $imageGenerateService->generateImageRaw($imageGenerateRequest);
+                if (! empty($generateImageRaw)) {
+                    return $generateImageRaw;
+                }
+            } catch (Exception $e) {
+                $this->logger->warning('text generate image error:' . $e->getMessage());
+            }
+        }
+        ExceptionBuilder::throw(ImageGenerateErrorCode::GENERAL_ERROR);
+    }
+
+    /**
+     * Image editing with uploaded files using volcano image generation models.
+     */
+    public function imageEdit(ImageEditDTO $imageEditDTO): array
+    {
+        $this->validateAccessToken($imageEditDTO);
+
+        $modelVersion = $imageEditDTO->getModel();
+        $serviceProviderConfigs = $this->serviceProviderDomainService->getOfficeAndActiveModel($modelVersion, ServiceProviderCategory::VLM);
+        $imageGenerateType = ImageGenerateModelType::fromModel($modelVersion, false);
+
+        $imageGenerateParamsVO = new AIImageGenerateParamsVO();
+        $imageGenerateParamsVO->setModel($modelVersion);
+        $imageGenerateParamsVO->setUserPrompt($imageEditDTO->getPrompt());
+        $imageGenerateParamsVO->setReferenceImages($imageEditDTO->getImages());
 
         $imageGenerateRequest = ImageGenerateFactory::createRequestType($imageGenerateType, $imageGenerateParamsVO->toArray());
 
