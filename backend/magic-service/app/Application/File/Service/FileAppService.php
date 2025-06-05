@@ -198,6 +198,10 @@ class FileAppService extends AbstractAppService
             $this->cache->set($localCredential, ['organization_code' => $organizationCode], (int) ($data['expires'] - time()));
         }
 
+        $data['magic_service_process_attachments_host'] =config('super-magic.sandbox.callback_host', '') . '/api/v1/super-agent/file/process-attachments';
+        // 更新工作区附件
+        $data['magic_service_workspace_attachments_host'] = config('super-magic.sandbox.callback_host', '') . '/api/v1/super-agent/file/workspace-attachments';
+
         return $data;
     }
 
