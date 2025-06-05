@@ -430,14 +430,14 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                 if [ "$(uname -s)" == "Darwin" ]; then
                     # macOS version
                     sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502|" .env
-                    sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP:9501|" .env
+                    sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP|" .env
                     # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                     sed -i '' "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files|" .env
                     sed -i '' "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$PUBLIC_IP|" .env
                 else
                     # Linux version
                     sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502|" .env
-                    sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP:9501|" .env
+                    sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP|" .env
                     # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                     sed -i "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files|" .env
                     sed -i "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$PUBLIC_IP|" .env
@@ -445,7 +445,7 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
 
                 bilingual "环境变量已更新:" "Environment variables updated:"
                 echo "MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502"
-                echo "MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP:9501"
+                echo "MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP"
                 echo "FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files"
                 echo "FILE_LOCAL_WRITE_HOST=http://$PUBLIC_IP"
 
@@ -484,14 +484,14 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                     if [ "$(uname -s)" == "Darwin" ]; then
                         # macOS version
                         sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502|" .env
-                        sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS:9501|" .env
+                        sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS|" .env
                         # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                         sed -i '' "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files|" .env
                         sed -i '' "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$MANUAL_IP_ADDRESS|" .env
                     else
                         # Linux version
                         sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502|" .env
-                        sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS:9501|" .env
+                        sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS|" .env
                         # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                         sed -i "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files|" .env
                         sed -i "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$MANUAL_IP_ADDRESS|" .env
@@ -499,7 +499,7 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
 
                     bilingual "环境变量已更新:" "Environment variables updated:"
                     echo "MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502"
-                    echo "MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS:9501"
+                    echo "MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS"
                     echo "FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files"
                     echo "FILE_LOCAL_WRITE_HOST=http://$MANUAL_IP_ADDRESS"
 
