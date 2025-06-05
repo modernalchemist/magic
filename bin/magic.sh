@@ -321,6 +321,58 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
             return 0
         fi
 
+        # 检查docker.sock位置
+        bilingual "正在检测docker.sock位置..." "Detecting docker.sock location..."
+
+        # 尝试多种可能的docker.sock位置
+        DOCKER_SOCK_PATHS=(
+            "/var/run/docker.sock"
+            "/run/user/$(id -u)/docker.sock"
+            "$HOME/.local/share/docker/docker.sock"
+            "$(docker info --format '{{.DockerRootDir}}/docker.sock' 2>/dev/null)"
+        )
+
+        DOCKER_SOCK_PATH=""
+        for path in "${DOCKER_SOCK_PATHS[@]}"; do
+            if [ -S "$path" ]; then
+                DOCKER_SOCK_PATH="$path"
+                break
+            fi
+        done
+
+        # 如果预定义路径都不存在，尝试使用find命令全局搜索
+        if [ -z "$DOCKER_SOCK_PATH" ]; then
+            bilingual "正在全局搜索docker.sock文件..." "Searching for docker.sock file globally..."
+            FOUND_SOCK=$(find / -name "docker.sock" 2>/dev/null | head -n 1)
+            if [ -n "$FOUND_SOCK" ] && [ -S "$FOUND_SOCK" ]; then
+                DOCKER_SOCK_PATH="$FOUND_SOCK"
+                bilingual "通过全局搜索找到docker.sock: $DOCKER_SOCK_PATH" "Found docker.sock through global search: $DOCKER_SOCK_PATH"
+            else
+                # 如果find命令也没找到，尝试使用docker info命令获取
+                DOCKER_SOCK_PATH=$(docker info --format '{{.DockerRootDir}}/docker.sock' 2>/dev/null)
+                if [ -z "$DOCKER_SOCK_PATH" ] || [ ! -S "$DOCKER_SOCK_PATH" ]; then
+                    DOCKER_SOCK_PATH="/var/run/docker.sock"
+                fi
+            fi
+        fi
+
+        if [ "$DOCKER_SOCK_PATH" != "/var/run/docker.sock" ]; then
+            bilingual "检测到非标准docker.sock位置: $DOCKER_SOCK_PATH" "Detected non-standard docker.sock location: $DOCKER_SOCK_PATH"
+            bilingual "正在更新SANDBOX_DOCKER_RUNTIME配置..." "Updating SANDBOX_DOCKER_RUNTIME configuration..."
+
+            if [ "$(uname -s)" == "Darwin" ]; then
+                # macOS version
+                sed -i '' "s|^SANDBOX_DOCKER_RUNTIME=.*|SANDBOX_DOCKER_RUNTIME=$DOCKER_SOCK_PATH|" .env
+            else
+                # Linux version
+                sed -i "s|^SANDBOX_DOCKER_RUNTIME=.*|SANDBOX_DOCKER_RUNTIME=$DOCKER_SOCK_PATH|" .env
+            fi
+
+            bilingual "已更新SANDBOX_DOCKER_RUNTIME为: $DOCKER_SOCK_PATH" "Updated SANDBOX_DOCKER_RUNTIME to: $DOCKER_SOCK_PATH"
+        else
+            bilingual "使用默认docker.sock位置: $DOCKER_SOCK_PATH" "Using default docker.sock location: $DOCKER_SOCK_PATH"
+        fi
+
         # Ask if domain name is needed
         bilingual "是否需要使用域名访问?" "Do you need to use a domain name for access?"
         read -p "$(bilingual "请输入 [y/n]: " "Please enter [y/n]: ")" USE_DOMAIN
@@ -334,23 +386,23 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                 # Update MAGIC_SOCKET_BASE_URL and MAGIC_SERVICE_BASE_URL
                 if [ "$(uname -s)" == "Darwin" ]; then
                     # macOS version
-                    sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS:9502|" .env
-                    sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS:9501|" .env
+                    sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS|" .env
+                    sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS|" .env
                     # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                     sed -i '' "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$DOMAIN_ADDRESS/files|" .env
                     sed -i '' "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$DOMAIN_ADDRESS|" .env
                 else
                     # Linux version
-                    sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS:9502|" .env
-                    sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost:9501|MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS:9501|" .env
+                    sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS|" .env
+                    sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS|" .env
                     # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                     sed -i "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$DOMAIN_ADDRESS/files|" .env
                     sed -i "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$DOMAIN_ADDRESS|" .env
                 fi
 
                 bilingual "环境变量已更新:" "Environment variables updated:"
-                echo "MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS:9502"
-                echo "MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS:9501"
+                echo "MAGIC_SOCKET_BASE_URL=ws://$DOMAIN_ADDRESS"
+                echo "MAGIC_SERVICE_BASE_URL=http://$DOMAIN_ADDRESS"
                 echo "FILE_LOCAL_READ_HOST=http://$DOMAIN_ADDRESS/files"
                 echo "FILE_LOCAL_WRITE_HOST=http://$DOMAIN_ADDRESS"
 
@@ -429,14 +481,14 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                 # Update MAGIC_SOCKET_BASE_URL and MAGIC_SERVICE_BASE_URL
                 if [ "$(uname -s)" == "Darwin" ]; then
                     # macOS version
-                    sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502|" .env
+                    sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP|" .env
                     sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP|" .env
                     # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                     sed -i '' "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files|" .env
                     sed -i '' "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$PUBLIC_IP|" .env
                 else
                     # Linux version
-                    sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502|" .env
+                    sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP|" .env
                     sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP|" .env
                     # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                     sed -i "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files|" .env
@@ -444,7 +496,7 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                 fi
 
                 bilingual "环境变量已更新:" "Environment variables updated:"
-                echo "MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP:9502"
+                echo "MAGIC_SOCKET_BASE_URL=ws://$PUBLIC_IP"
                 echo "MAGIC_SERVICE_BASE_URL=http://$PUBLIC_IP"
                 echo "FILE_LOCAL_READ_HOST=http://$PUBLIC_IP/files"
                 echo "FILE_LOCAL_WRITE_HOST=http://$PUBLIC_IP"
@@ -483,14 +535,14 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                     # Update MAGIC_SOCKET_BASE_URL and MAGIC_SERVICE_BASE_URL
                     if [ "$(uname -s)" == "Darwin" ]; then
                         # macOS version
-                        sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502|" .env
+                        sed -i '' "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS|" .env
                         sed -i '' "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS|" .env
                         # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                         sed -i '' "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files|" .env
                         sed -i '' "s|^FILE_LOCAL_WRITE_HOST=http://127.0.0.1|FILE_LOCAL_WRITE_HOST=http://$MANUAL_IP_ADDRESS|" .env
                     else
                         # Linux version
-                        sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502|" .env
+                        sed -i "s|^MAGIC_SOCKET_BASE_URL=ws://localhost:9502|MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS|" .env
                         sed -i "s|^MAGIC_SERVICE_BASE_URL=http://localhost|MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS|" .env
                         # Update FILE_LOCAL_READ_HOST and FILE_LOCAL_WRITE_HOST
                         sed -i "s|^FILE_LOCAL_READ_HOST=http://127.0.0.1/files|FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files|" .env
@@ -498,7 +550,7 @@ if [ "$SKIP_INSTALLATION" = "false" ]; then
                     fi
 
                     bilingual "环境变量已更新:" "Environment variables updated:"
-                    echo "MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS:9502"
+                    echo "MAGIC_SOCKET_BASE_URL=ws://$MANUAL_IP_ADDRESS"
                     echo "MAGIC_SERVICE_BASE_URL=http://$MANUAL_IP_ADDRESS"
                     echo "FILE_LOCAL_READ_HOST=http://$MANUAL_IP_ADDRESS/files"
                     echo "FILE_LOCAL_WRITE_HOST=http://$MANUAL_IP_ADDRESS"
