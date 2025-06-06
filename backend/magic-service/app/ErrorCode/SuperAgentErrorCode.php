@@ -31,4 +31,7 @@ enum SuperAgentErrorCode: int
 
     #[ErrorMessage('task.work_dir_not_found')]
     case WORK_DIR_NOT_FOUND = 51201;
+
+    #[ErrorMessage('task.create_workspace_version_failed')]
+    case CREATE_WORKSPACE_VERSION_FAILED = 51202;
 }
