@@ -36,8 +36,8 @@ class EnvManager
             $envDTO = $magicOrganizationEnvDomainService->getOrganizationsEnvironmentDTO($baseDataIsolation->getCurrentOrganizationCode());
             $env = $envDTO?->getMagicEnvironmentEntity();
             $envId = $envDTO?->getEnvironmentId() ?? 0;
-            $relationEnvIds = $envDTO?->getRelationEnvIds() ?? [];
-            if (count($relationEnvIds) > 0 && ! $env->getEnvironment()->isProduction()) {
+            $relationEnvIds = $env?->getRelationEnvIds() ?? [];
+            if (count($relationEnvIds) > 0 && ! $env?->getEnvironment()?->isProduction()) {
                 foreach ($relationEnvIds as $relationEnvId) {
                     if ($relationEnvId === $envId) {
                         continue;
