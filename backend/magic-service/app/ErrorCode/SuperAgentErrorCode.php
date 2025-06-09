@@ -10,7 +10,7 @@ namespace App\ErrorCode;
 use App\Infrastructure\Core\Exception\Annotation\ErrorMessage;
 
 /**
- * 错误码范围:51000-51200.
+ * 错误码范围:51000-51300.
  */
 enum SuperAgentErrorCode: int
 {

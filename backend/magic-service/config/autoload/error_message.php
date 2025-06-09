@@ -44,7 +44,7 @@ return [
         AsrErrorCode::class => [43000, 43999],
         UserTaskErrorCode::class => [8000, 8999],
         ServiceProviderErrorCode::class => [44000, 44999],
-        SuperAgentErrorCode::class => [51000, 51200],
+        SuperAgentErrorCode::class => [51000, 51299],
         ShareErrorCode::class => [51300, 51400],
         MCPErrorCode::class => [51500, 51599],
     ],
