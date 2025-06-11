@@ -1193,7 +1193,7 @@ class LLMAppService extends AbstractLLMAppService
 
                 $fileLink = $this->fileDomainService->getLink($authorization->getOrganizationCode(), $uploadFile->getKey(), StorageBucketType::Public);
 
-                $processedImages[] = $fileLink;
+                $processedImages[] = $fileLink->getUrl();
             } catch (Exception $e) {
                 $this->logger->error('Failed to process base64 image', [
                     'index' => $index,
