@@ -1185,11 +1185,9 @@ class LLMAppService extends AbstractLLMAppService
 
         foreach ($images as $index => $base64Image) {
             try {
-                $uploadDir = $authorization->getOrganizationCode() . '/image_generate/' . md5(StorageBucketType::Public->value);
+                $subDir = 'open';
 
-                $filename = 'generated_' . time() . '_' . $index . '.png';
-
-                $uploadFile = new UploadFile($base64Image, $uploadDir, $filename);
+                $uploadFile = new UploadFile($base64Image, $subDir, '');
 
                 $this->fileDomainService->uploadByCredential($authorization->getOrganizationCode(), $uploadFile);
 
