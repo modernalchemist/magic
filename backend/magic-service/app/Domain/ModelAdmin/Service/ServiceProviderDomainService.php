@@ -1508,7 +1508,6 @@ class ServiceProviderDomainService
         return $mergedConfig;
     }
 
-
     /**
      * 批量创建服务商配置.
      * @param ServiceProviderEntity[] $serviceProviders 服务商实体列表
