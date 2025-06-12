@@ -11,7 +11,9 @@ use AlibabaCloud\Client\AlibabaCloud;
 use AlibabaCloud\Sts\Sts;
 use DateTime;
 use Dtyq\CloudFile\Kernel\Driver\ExpandInterface;
+use Dtyq\CloudFile\Kernel\Exceptions\ChunkDownloadException;
 use Dtyq\CloudFile\Kernel\Exceptions\CloudFileException;
+use Dtyq\CloudFile\Kernel\Struct\ChunkDownloadConfig;
 use Dtyq\CloudFile\Kernel\Struct\CredentialPolicy;
 use Dtyq\CloudFile\Kernel\Struct\FileLink;
 use Dtyq\CloudFile\Kernel\Utils\EasyFileTools;
@@ -55,6 +57,9 @@ class OSSExpand implements ExpandInterface
         return $list;
     }
 
+    /**
+     * @phpstan-ignore-next-line (FileAttributes is compatible with expected return type)
+     */
     public function getMetas(array $paths, array $options = []): array
     {
         $list = [];
@@ -75,6 +80,11 @@ class OSSExpand implements ExpandInterface
     {
         $this->client->copyObject($this->bucket, $source, $this->bucket, $destination);
         return $destination;
+    }
+
+    public function downloadByChunks(string $filePath, string $localPath, ChunkDownloadConfig $config, array $options = []): void
+    {
+        throw new ChunkDownloadException('OSS chunk download not implemented yet. Reserved for future implementation.');
     }
 
     /**
