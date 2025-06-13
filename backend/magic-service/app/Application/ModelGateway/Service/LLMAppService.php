@@ -15,6 +15,7 @@ use App\Domain\ModelGateway\Entity\AccessTokenEntity;
 use App\Domain\ModelGateway\Entity\Dto\AbstractRequestDTO;
 use App\Domain\ModelGateway\Entity\Dto\CompletionDTO;
 use App\Domain\ModelGateway\Entity\Dto\EmbeddingsDTO;
+use App\Domain\ModelGateway\Entity\Dto\ImageEditDTO;
 use App\Domain\ModelGateway\Entity\Dto\ProxyModelRequestInterface;
 use App\Domain\ModelGateway\Entity\Dto\TextGenerateImageDTO;
 use App\Domain\ModelGateway\Entity\ModelConfigEntity;
@@ -31,8 +32,10 @@ use App\Infrastructure\Core\HighAvailability\DTO\EndpointResponseDTO;
 use App\Infrastructure\Core\HighAvailability\Entity\ValueObject\HighAvailabilityAppType;
 use App\Infrastructure\Core\HighAvailability\Interface\HighAvailabilityInterface;
 use App\Infrastructure\Core\Model\ImageGenerationModel;
+use App\Infrastructure\Core\ValueObject\StorageBucketType;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\ImageGenerateFactory;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\ImageGenerateModelType;
+use App\Infrastructure\ExternalAPI\ImageGenerateAPI\ImageGenerateType;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\Model\MiracleVision\MiracleVisionModel;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\Model\MiracleVision\MiracleVisionModelResponse;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\Request\MiracleVisionModelRequest;
@@ -43,6 +46,7 @@ use App\Infrastructure\Util\SSRF\SSRFUtil;
 use App\Interfaces\Authorization\Web\MagicUserAuthorization;
 use App\Interfaces\ModelGateway\Assembler\EndpointAssembler;
 use DateTime;
+use Dtyq\CloudFile\Kernel\Struct\UploadFile;
 use Exception;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\Context\Context;
@@ -117,7 +121,7 @@ class LLMAppService extends AbstractLLMAppService
             $modelConfigEntity->setObject($objectType);
 
             // Only set info for non-image models when withInfo is true
-            if ($withInfo && !$isImageModel) {
+            if ($withInfo && ! $isImageModel) {
                 $modelConfigEntity->setInfo([
                     'attributes' => $odinModel->getAttributes()->toArray(),
                     'options' => $model->getModelOptions()->toArray(),
@@ -1130,17 +1134,13 @@ class LLMAppService extends AbstractLLMAppService
     }
 
     /**
-     * 计算宽高比例的字符串格式.
-     * @param int $width 宽度
-     * @param int $height 高度
-     * @return string 比例字符串，如"1:1", "3:4", "16:9"
+     * Calculate the width-to-height ratio.
+     * @return string "1:1", "3:4", "16:9"
      */
     private function calculateRatio(int $width, int $height): string
     {
-        // 计算最大公约数
         $gcd = $this->gcd($width, $height);
 
-        // 计算简化后的比例
         $ratioWidth = $width / $gcd;
         $ratioHeight = $height / $gcd;
 

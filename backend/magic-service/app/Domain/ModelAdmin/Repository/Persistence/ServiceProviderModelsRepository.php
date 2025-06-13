@@ -553,28 +553,6 @@ class ServiceProviderModelsRepository extends AbstractModelRepository
     }
 
     /**
-     * Remove immutable fields from entity array.
-     */
-    private function removeImmutableFields(array &$entityArray): void
-    {
-        unset($entityArray['id'], $entityArray['model_parent_id']);
-    }
-
-    /**
-     * Remove immutable fields for office model updates.
-     */
-    private function removeOfficeImmutableFields(array &$entityArray): void
-    {
-        unset(
-            $entityArray['id'],
-            $entityArray['organization_code'],
-            $entityArray['service_provider_config_id'],
-            $entityArray['status'],
-            $entityArray['model_parent_id'],
-        );
-    }
-
-    /**
      * @return ServiceProviderModelsEntity[]
      */
     public function getActiveModelsByConfigIds(array $configIds): array
@@ -610,6 +588,28 @@ class ServiceProviderModelsRepository extends AbstractModelRepository
             ->orderBy('created_at', 'desc'); // 按创建时间倒序排列
 
         return $this->executeQueryAndToEntities($query);
+    }
+
+    /**
+     * Remove immutable fields from entity array.
+     */
+    private function removeImmutableFields(array &$entityArray): void
+    {
+        unset($entityArray['id'], $entityArray['model_parent_id']);
+    }
+
+    /**
+     * Remove immutable fields for office model updates.
+     */
+    private function removeOfficeImmutableFields(array &$entityArray): void
+    {
+        unset(
+            $entityArray['id'],
+            $entityArray['organization_code'],
+            $entityArray['service_provider_config_id'],
+            $entityArray['status'],
+            $entityArray['model_parent_id'],
+        );
     }
 
     /**
