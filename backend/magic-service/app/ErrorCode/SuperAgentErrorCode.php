@@ -35,7 +35,6 @@ enum SuperAgentErrorCode: int
     #[ErrorMessage('task.create_workspace_version_failed')]
     case CREATE_WORKSPACE_VERSION_FAILED = 51202;
 
-
     #[ErrorMessage('topic.concurrent_operation_failed')]
     case TOPIC_LOCK_FAILED = 51203;
 }

@@ -199,7 +199,7 @@ class FileAppService extends AbstractAppService
         }
 
         // magic service 服务地址
-        $data['magic_service_host'] = config('super-magic.sandbox.callback_host', '') ;
+        $data['magic_service_host'] = config('super-magic.sandbox.callback_host', '');
 
         return $data;
     }
