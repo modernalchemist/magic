@@ -16,6 +16,7 @@ use Dtyq\CloudFile\Kernel\Exceptions\CloudFileException;
 use Dtyq\CloudFile\Kernel\Struct\ChunkDownloadConfig;
 use Dtyq\CloudFile\Kernel\Struct\CredentialPolicy;
 use Dtyq\CloudFile\Kernel\Struct\FileLink;
+use Dtyq\CloudFile\Kernel\Struct\FileMetadata;
 use Dtyq\CloudFile\Kernel\Utils\EasyFileTools;
 use League\Flysystem\FileAttributes;
 use OSS\OssClient;
@@ -90,15 +91,21 @@ class OSSExpand implements ExpandInterface
     /**
      * @see https://www.alibabacloud.com/help/zh/oss/developer-reference/getobjectmeta
      */
-    private function getMeta(string $path): FileAttributes
+    private function getMeta(string $path): FileMetadata
     {
         $data = $this->client->getObjectMeta($this->bucket, $path);
-        return new FileAttributes(
+        $fileName = basename($path);
+
+        return new FileMetadata(
+            $fileName,
             $path,
-            (int) ($data['content-length'] ?? 0),
-            null,
-            (int) (new DateTime($data['last-modified']))->getTimestamp(),
-            $data['content-type'] ?? null
+            new FileAttributes(
+                $path,
+                (int) ($data['content-length'] ?? 0),
+                null,
+                (int) (new DateTime($data['last-modified']))->getTimestamp(),
+                $data['content-type'] ?? null
+            )
         );
     }
 

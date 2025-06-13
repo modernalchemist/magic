@@ -16,6 +16,7 @@ use Dtyq\CloudFile\Kernel\Struct\ChunkDownloadFile;
 use Dtyq\CloudFile\Kernel\Struct\ChunkDownloadInfo;
 use Dtyq\CloudFile\Kernel\Struct\CredentialPolicy;
 use Dtyq\CloudFile\Kernel\Struct\FileLink;
+use Dtyq\CloudFile\Kernel\Struct\FileMetadata;
 use Dtyq\CloudFile\Kernel\Utils\EasyFileTools;
 use Exception;
 use GuzzleHttp\Psr7\Utils;
@@ -56,7 +57,7 @@ class TOSExpand implements ExpandInterface
     }
 
     /**
-     * @phpstan-ignore-next-line (FileAttributes is compatible with expected return type)
+     * @phpstan-ignore-next-line
      */
     public function getMetas(array $paths, array $options = []): array
     {
@@ -364,16 +365,21 @@ class TOSExpand implements ExpandInterface
         }
     }
 
-    private function getMeta(string $path): FileAttributes
+    private function getMeta(string $path): FileMetadata
     {
         $output = $this->client->headObject(new HeadObjectInput($this->getBucket(), $path));
+        $fileName = basename($path);
 
-        return new FileAttributes(
+        return new FileMetadata(
+            $fileName,
             $path,
-            $output->getContentLength(),
-            null,
-            $output->getLastModified(),
-            $output->getContentType()
+            new FileAttributes(
+                $path,
+                $output->getContentLength(),
+                null,
+                $output->getLastModified(),
+                $output->getContentType()
+            )
         );
     }
 

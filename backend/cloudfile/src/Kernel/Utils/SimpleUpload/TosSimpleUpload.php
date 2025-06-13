@@ -68,7 +68,71 @@ class TosSimpleUpload extends SimpleUpload
 
     public function appendUploadObject(array $credential, AppendUploadFile $appendUploadFile): void
     {
-        throw new CloudFileException('TOS append upload not implemented');
+        $object = $credential['dir'] . $appendUploadFile->getKeyPath();
+
+        $credentials = $credential['credentials'];
+        // 检查必填参数
+        if (! isset($credential['host']) || ! isset($credential['dir']) || ! isset($credentials['AccessKeyId']) || ! isset($credentials['SecretAccessKey']) || ! isset($credentials['SessionToken'])) {
+            throw new CloudFileException('TOS upload credential is invalid');
+        }
+
+        // 先获取文件
+        $key = $credential['dir'] . $appendUploadFile->getKeyPath();
+
+        try {
+            $fileContent = file_get_contents($appendUploadFile->getRealPath());
+            if ($fileContent === false) {
+                throw new CloudFileException('读取文件失败：' . $appendUploadFile->getRealPath());
+            }
+
+            $contentType = mime_content_type($appendUploadFile->getRealPath());
+            $date = gmdate('D, d M Y H:i:s \G\M\T');
+
+            $host = parse_url($credential['host'])['host'] ?? '';
+            $headers = [
+                'Host' => $host,
+                'Content-Type' => $contentType,
+                'Content-Length' => strlen($fileContent),
+                'x-tos-security-token' => $credentials['SessionToken'],
+                'Date' => $date,
+                'x-tos-date' => $date,
+            ];
+
+            $request = TosSigner::sign(
+                [
+                    'headers' => $headers,
+                    'method' => 'POST',
+                    'key' => $object,
+                    'queries' => [
+                        'append' => '',
+                        'offset' => (string) $appendUploadFile->getPosition(),
+                    ],
+                ],
+                $host,
+                $credentials['AccessKeyId'],
+                $credentials['SecretAccessKey'],
+                $credentials['SessionToken'],
+                $credential['region']
+            );
+
+            $headers = $request['headers'];
+
+            $body = file_get_contents($appendUploadFile->getRealPath());
+
+            $url = $credential['host'] . '/' . $object . '?append&offset=' . $appendUploadFile->getPosition();
+            CurlHelper::sendRequest($url, $body, $headers, 200);
+        } catch (Throwable $exception) {
+            $errorMsg = $exception->getMessage();
+            throw $exception;
+        } finally {
+            if (isset($errorMsg)) {
+                $this->sdkContainer->getLogger()->warning('simple_upload_fail', ['key' => $key, 'host' => $credential['host'], 'error_msg' => $errorMsg]);
+            } else {
+                $this->sdkContainer->getLogger()->info('simple_upload_success', ['key' => $key, 'host' => $credential['host']]);
+            }
+        }
+        $appendUploadFile->setKey($key);
+        $appendUploadFile->setPosition($appendUploadFile->getPosition() + $appendUploadFile->getSize());
     }
 
     /**

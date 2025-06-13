@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Dtyq\CloudFile\Kernel\Struct;
 
+use ReflectionClass;
+
 /**
  * 分片上传文件类
  * 继承自UploadFile，添加分片上传相关配置.
@@ -136,7 +138,7 @@ class ChunkUploadFile extends UploadFile
     public static function fromUploadFile(UploadFile $uploadFile, ?ChunkUploadConfig $chunkConfig = null): self
     {
         // Access the rename property through reflection since it's private
-        $reflection = new \ReflectionClass($uploadFile);
+        $reflection = new ReflectionClass($uploadFile);
         $renameProperty = $reflection->getProperty('rename');
         $renameProperty->setAccessible(true);
         $rename = $renameProperty->getValue($uploadFile);
