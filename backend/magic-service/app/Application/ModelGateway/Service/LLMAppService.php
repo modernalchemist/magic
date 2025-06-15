@@ -8,15 +8,20 @@ declare(strict_types=1);
 namespace App\Application\ModelGateway\Service;
 
 use App\Application\ModelGateway\Mapper\OdinModel;
+use App\Domain\Chat\Entity\ValueObject\AIImage\AIImageGenerateParamsVO;
+use App\Domain\ModelAdmin\Constant\ServiceProviderCategory;
 use App\Domain\ModelAdmin\Constant\ServiceProviderType;
 use App\Domain\ModelGateway\Entity\AccessTokenEntity;
 use App\Domain\ModelGateway\Entity\Dto\AbstractRequestDTO;
 use App\Domain\ModelGateway\Entity\Dto\CompletionDTO;
 use App\Domain\ModelGateway\Entity\Dto\EmbeddingsDTO;
+use App\Domain\ModelGateway\Entity\Dto\ImageEditDTO;
 use App\Domain\ModelGateway\Entity\Dto\ProxyModelRequestInterface;
+use App\Domain\ModelGateway\Entity\Dto\TextGenerateImageDTO;
 use App\Domain\ModelGateway\Entity\ModelConfigEntity;
 use App\Domain\ModelGateway\Entity\MsgLogEntity;
 use App\Domain\ModelGateway\Entity\ValueObject\LLMDataIsolation;
+use App\ErrorCode\ImageGenerateErrorCode;
 use App\ErrorCode\MagicApiErrorCode;
 use App\ErrorCode\ServiceProviderErrorCode;
 use App\Infrastructure\Core\Exception\BusinessException;
@@ -26,8 +31,11 @@ use App\Infrastructure\Core\HighAvailability\DTO\EndpointRequestDTO;
 use App\Infrastructure\Core\HighAvailability\DTO\EndpointResponseDTO;
 use App\Infrastructure\Core\HighAvailability\Entity\ValueObject\HighAvailabilityAppType;
 use App\Infrastructure\Core\HighAvailability\Interface\HighAvailabilityInterface;
+use App\Infrastructure\Core\Model\ImageGenerationModel;
+use App\Infrastructure\Core\ValueObject\StorageBucketType;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\ImageGenerateFactory;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\ImageGenerateModelType;
+use App\Infrastructure\ExternalAPI\ImageGenerateAPI\ImageGenerateType;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\Model\MiracleVision\MiracleVisionModel;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\Model\MiracleVision\MiracleVisionModelResponse;
 use App\Infrastructure\ExternalAPI\ImageGenerateAPI\Request\MiracleVisionModelRequest;
@@ -38,9 +46,12 @@ use App\Infrastructure\Util\SSRF\SSRFUtil;
 use App\Interfaces\Authorization\Web\MagicUserAuthorization;
 use App\Interfaces\ModelGateway\Assembler\EndpointAssembler;
 use DateTime;
+use Dtyq\CloudFile\Kernel\Struct\UploadFile;
 use Exception;
 use Hyperf\Context\ApplicationContext;
+use Hyperf\Context\Context;
 use Hyperf\DbConnection\Db;
+use Hyperf\Odin\Api\Request\ChatCompletionRequest;
 use Hyperf\Odin\Api\Response\ChatCompletionResponse;
 use Hyperf\Odin\Api\Response\ChatCompletionStreamResponse;
 use Hyperf\Odin\Api\Response\EmbeddingResponse;
@@ -56,6 +67,7 @@ use Hyperf\Odin\Utils\MessageUtil;
 use Hyperf\Odin\Utils\ToolUtil;
 use Hyperf\Redis\Redis;
 use InvalidArgumentException;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Throwable;
 
 use function Hyperf\Coroutine\defer;
@@ -84,8 +96,9 @@ class LLMAppService extends AbstractLLMAppService
 
         $chatModels = $this->modelGatewayMapper->getChatModels($accessTokenEntity->getOrganizationCode());
         $embeddingModels = $this->modelGatewayMapper->getEmbeddingModels($accessTokenEntity->getOrganizationCode());
+        $imageModels = $this->modelGatewayMapper->getImageModels($accessTokenEntity->getOrganizationCode());
 
-        $models = array_merge($chatModels, $embeddingModels);
+        $models = array_merge($chatModels, $embeddingModels, $imageModels);
 
         $list = [];
         foreach ($models as $name => $odinModel) {
@@ -93,14 +106,22 @@ class LLMAppService extends AbstractLLMAppService
             $model = $odinModel->getModel();
 
             $modelConfigEntity = new ModelConfigEntity();
-            // Service provider endpoint
+
+            // Determine object type based on model type
+            $isImageModel = $model instanceof ImageGenerationModel;
+            $objectType = $isImageModel ? 'image' : 'model';
+
+            // Set common fields
             $modelConfigEntity->setModel($model->getModelName());
             // Model type
             $modelConfigEntity->setType($odinModel->getAttributes()->getKey());
             $modelConfigEntity->setName($odinModel->getAttributes()->getLabel() ?: $odinModel->getAttributes()->getName());
             $modelConfigEntity->setOwnerBy($odinModel->getAttributes()->getOwner());
             $modelConfigEntity->setCreatedAt($odinModel->getAttributes()->getCreatedAt());
-            if ($withInfo) {
+            $modelConfigEntity->setObject($objectType);
+
+            // Only set info for non-image models when withInfo is true
+            if ($withInfo && ! $isImageModel) {
                 $modelConfigEntity->setInfo([
                     'attributes' => $odinModel->getAttributes()->toArray(),
                     'options' => $model->getModelOptions()->toArray(),
@@ -151,6 +172,11 @@ class LLMAppService extends AbstractLLMAppService
         if (! isset($data['model'])) {
             $data['model'] = $modelVersion;
         }
+
+        if (! is_array($data['reference_images'])) {
+            $data['reference_images'] = [$data['reference_images']];
+        }
+
         $imageGenerateType = ImageGenerateModelType::fromModel($modelVersion, false);
         $imageGenerateRequest = ImageGenerateFactory::createRequestType($imageGenerateType, $data);
         $imageGenerateRequest->setGenerateNum($data['generate_num'] ?? 4);
@@ -171,7 +197,13 @@ class LLMAppService extends AbstractLLMAppService
         $this->logger->info('Image generation service configuration', $configInfo);
 
         $imageGenerateResponse = $imageGenerateService->generateImage($imageGenerateRequest);
-        $images = $imageGenerateResponse->getData();
+
+        if ($imageGenerateResponse->getImageGenerateType() === ImageGenerateType::BASE_64) {
+            $images = $this->processBase64Images($imageGenerateResponse->getData(), $authorization);
+        } else {
+            $images = $imageGenerateResponse->getData();
+        }
+
         $this->logger->info('images', $images);
         $this->recordImageGenerateMessageLog($modelVersion, $authorization->getId(), $authorization->getOrganizationCode());
         return $images;
@@ -203,6 +235,81 @@ class LLMAppService extends AbstractLLMAppService
          */
         $imageGenerateService = ImageGenerateFactory::create(ImageGenerateModelType::MiracleVision, $miracleVisionServiceProviderConfig->getServiceProviderConfig());
         return $imageGenerateService->queryTask($taskId);
+    }
+
+    public function textGenerateImage(TextGenerateImageDTO $textGenerateImageDTO): array
+    {
+        $this->validateAccessToken($textGenerateImageDTO);
+
+        $modelVersion = $textGenerateImageDTO->getModel();
+        $serviceProviderConfigs = $this->serviceProviderDomainService->getOfficeAndActiveModel($modelVersion, ServiceProviderCategory::VLM);
+        $imageGenerateType = ImageGenerateModelType::fromModel($modelVersion, false);
+
+        $imageGenerateParamsVO = new AIImageGenerateParamsVO();
+        $imageGenerateParamsVO->setModel($modelVersion);
+        $imageGenerateParamsVO->setUserPrompt($textGenerateImageDTO->getPrompt());
+        $imageGenerateParamsVO->setGenerateNum($textGenerateImageDTO->getN());
+
+        $size = $textGenerateImageDTO->getSize();
+        [$width, $height] = explode('x', $size);
+
+        // 计算字符串格式的比例，如 "1:1", "3:4"
+        $ratio = $this->calculateRatio((int) $width, (int) $height);
+        $imageGenerateParamsVO->setRatio($ratio);
+        $imageGenerateParamsVO->setWidth($width);
+        $imageGenerateParamsVO->setHeight($height);
+
+        // 从服务商配置数组中取第一个进行处理
+        if (empty($serviceProviderConfigs)) {
+            ExceptionBuilder::throw(ServiceProviderErrorCode::ModelNotFound);
+        }
+
+        $imageGenerateRequest = ImageGenerateFactory::createRequestType($imageGenerateType, $imageGenerateParamsVO->toArray());
+
+        foreach ($serviceProviderConfigs as $serviceProviderConfig) {
+            $imageGenerateService = ImageGenerateFactory::create($imageGenerateType, $serviceProviderConfig);
+            try {
+                $generateImageRaw = $imageGenerateService->generateImageRaw($imageGenerateRequest);
+                if (! empty($generateImageRaw)) {
+                    return $generateImageRaw;
+                }
+            } catch (Exception $e) {
+                $this->logger->warning('text generate image error:' . $e->getMessage());
+            }
+        }
+        ExceptionBuilder::throw(ImageGenerateErrorCode::GENERAL_ERROR);
+    }
+
+    /**
+     * Image editing with uploaded files using volcano image generation models.
+     */
+    public function imageEdit(ImageEditDTO $imageEditDTO): array
+    {
+        $this->validateAccessToken($imageEditDTO);
+
+        $modelVersion = $imageEditDTO->getModel();
+        $serviceProviderConfigs = $this->serviceProviderDomainService->getOfficeAndActiveModel($modelVersion, ServiceProviderCategory::VLM);
+        $imageGenerateType = ImageGenerateModelType::fromModel($modelVersion, false);
+
+        $imageGenerateParamsVO = new AIImageGenerateParamsVO();
+        $imageGenerateParamsVO->setModel($modelVersion);
+        $imageGenerateParamsVO->setUserPrompt($imageEditDTO->getPrompt());
+        $imageGenerateParamsVO->setReferenceImages($imageEditDTO->getImages());
+
+        $imageGenerateRequest = ImageGenerateFactory::createRequestType($imageGenerateType, $imageGenerateParamsVO->toArray());
+
+        foreach ($serviceProviderConfigs as $serviceProviderConfig) {
+            $imageGenerateService = ImageGenerateFactory::create($imageGenerateType, $serviceProviderConfig);
+            try {
+                $generateImageRaw = $imageGenerateService->generateImageRaw($imageGenerateRequest);
+                if (! empty($generateImageRaw)) {
+                    return $generateImageRaw;
+                }
+            } catch (Exception $e) {
+                $this->logger->warning('text generate image error:' . $e->getMessage());
+            }
+        }
+        ExceptionBuilder::throw(ImageGenerateErrorCode::GENERAL_ERROR);
     }
 
     /**
@@ -268,6 +375,9 @@ class LLMAppService extends AbstractLLMAppService
         } catch (Throwable $e) {
             $this->logger->warning('endpointHighAvailability failed to check conversation continuation', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
             return null;
         }
@@ -417,51 +527,66 @@ class LLMAppService extends AbstractLLMAppService
      */
     protected function getHighAvailableModelId(ProxyModelRequestInterface $proxyModelRequest, ?EndpointDTO &$endpointDTO, ?string $orgCode = null): ?string
     {
-        $highAvailable = $this->getHighAvailabilityService();
-        if ($highAvailable === null) {
+        try {
+            $highAvailable = $this->getHighAvailabilityService();
+            if ($highAvailable === null) {
+                return null;
+            }
+
+            // If it's a chat request, try to get remembered endpoint ID (conversation continuation already checked internally)
+            $rememberedEndpointId = null;
+            if ($proxyModelRequest instanceof CompletionDTO) {
+                $rememberedEndpointId = $this->getRememberedEndpointId($proxyModelRequest);
+            }
+
+            // Use EndpointAssembler to generate standardized endpoint type identifier
+            $modelType = $proxyModelRequest->getModel();
+            $formattedModelType = EndpointAssembler::generateEndpointType(
+                HighAvailabilityAppType::MODEL_GATEWAY,
+                $modelType
+            );
+
+            // Create endpoint request DTO
+            $endpointRequest = EndpointRequestDTO::create(
+                endpointType: $formattedModelType,
+                orgCode: $orgCode ?? '',
+                lastSelectedEndpointId: $rememberedEndpointId
+            );
+
+            // Get available endpoints
+            $endpointDTO = $highAvailable->getAvailableEndpoint($endpointRequest);
+
+            // Log only when remembered endpoint ID matches the current endpoint ID
+            if ($rememberedEndpointId && $endpointDTO && $rememberedEndpointId === $endpointDTO->getEndpointId()) {
+                $this->logger->info('endpointHighAvailability sameConversationEndpoint', [
+                    'remembered_endpoint_id' => $rememberedEndpointId,
+                    'current_endpoint_id' => $endpointDTO->getEndpointId(),
+                    'model' => $modelType,
+                    'is_same_endpoint' => true,
+                ]);
+            }
+
+            // If it's a chat request and got a new endpoint, remember this endpoint ID
+            if ($proxyModelRequest instanceof CompletionDTO && $endpointDTO && $endpointDTO->getEndpointId()) {
+                $this->rememberEndpointId($proxyModelRequest, $endpointDTO->getEndpointId());
+            }
+
+            // Model configuration id
+            return $endpointDTO?->getBusinessId() ?: null;
+        } catch (Throwable $e) {
+            $this->logger->warning('endpointHighAvailability failed to get high available model ID', [
+                'model' => $proxyModelRequest->getModel(),
+                'orgCode' => $orgCode,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Reset endpointDTO to null when exception occurs
+            $endpointDTO = null;
             return null;
         }
-
-        // If it's a chat request, try to get remembered endpoint ID (conversation continuation already checked internally)
-        $rememberedEndpointId = null;
-        if ($proxyModelRequest instanceof CompletionDTO) {
-            $rememberedEndpointId = $this->getRememberedEndpointId($proxyModelRequest);
-        }
-
-        // Use EndpointAssembler to generate standardized endpoint type identifier
-        $modelType = $proxyModelRequest->getModel();
-        $formattedModelType = EndpointAssembler::generateEndpointType(
-            HighAvailabilityAppType::MODEL_GATEWAY,
-            $modelType
-        );
-
-        // Create endpoint request DTO
-        $endpointRequest = EndpointRequestDTO::create(
-            endpointType: $formattedModelType,
-            orgCode: $orgCode ?? '',
-            lastSelectedEndpointId: $rememberedEndpointId
-        );
-
-        // Get available endpoints
-        $endpointDTO = $highAvailable->getAvailableEndpoint($endpointRequest);
-
-        // Log only when remembered endpoint ID matches the current endpoint ID
-        if ($rememberedEndpointId && $endpointDTO && $rememberedEndpointId === $endpointDTO->getEndpointId()) {
-            $this->logger->info('endpointHighAvailability sameConversationEndpoint', [
-                'remembered_endpoint_id' => $rememberedEndpointId,
-                'current_endpoint_id' => $endpointDTO->getEndpointId(),
-                'model' => $modelType,
-                'is_same_endpoint' => true,
-            ]);
-        }
-
-        // If it's a chat request and got a new endpoint, remember this endpoint ID
-        if ($proxyModelRequest instanceof CompletionDTO && $endpointDTO && $endpointDTO->getEndpointId()) {
-            $this->rememberEndpointId($proxyModelRequest, $endpointDTO->getEndpointId());
-        }
-
-        // Model configuration id
-        return $endpointDTO?->getBusinessId() ?: null;
     }
 
     /**
@@ -508,6 +633,9 @@ class LLMAppService extends AbstractLLMAppService
             $this->logger->warning('endpointHighAvailability Failed to remember endpoint ID', [
                 'endpoint_id' => $endpointId,
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
@@ -533,20 +661,28 @@ class LLMAppService extends AbstractLLMAppService
 
         // Single loop: build cumulative hash string and calculate hashes as we go
         foreach ($messages as $index => $message) {
+            // Ensure message is an array
+            if (! is_array($message)) {
+                continue;
+            }
+
             // Extract and concatenate parts for current message directly to string
-            $cumulativeHashString .= $message['role'] ?? '';
-            $cumulativeHashString .= $message['content'] ?? '';
-            $cumulativeHashString .= $message['name'] ?? '';
-            $cumulativeHashString .= $message['tool_call_id'] ?? '';
+            $cumulativeHashString .= $this->convertToString($message['role'] ?? '');
+            $cumulativeHashString .= $this->convertToString($message['content'] ?? '');
+            $cumulativeHashString .= $this->convertToString($message['name'] ?? '');
+            $cumulativeHashString .= $this->convertToString($message['tool_call_id'] ?? '');
 
             // Handle tool_calls
             if (isset($message['tool_calls']) && is_array($message['tool_calls'])) {
                 foreach ($message['tool_calls'] as $toolCall) {
-                    $cumulativeHashString .= $toolCall['id'] ?? '';
-                    $cumulativeHashString .= $toolCall['type'] ?? '';
-                    if (isset($toolCall['function'])) {
-                        $cumulativeHashString .= $toolCall['function']['name'] ?? '';
-                        $cumulativeHashString .= $toolCall['function']['arguments'] ?? '';
+                    if (! is_array($toolCall)) {
+                        continue;
+                    }
+                    $cumulativeHashString .= $this->convertToString($toolCall['id'] ?? '');
+                    $cumulativeHashString .= $this->convertToString($toolCall['type'] ?? '');
+                    if (isset($toolCall['function']) && is_array($toolCall['function'])) {
+                        $cumulativeHashString .= $this->convertToString($toolCall['function']['name'] ?? '');
+                        $cumulativeHashString .= $this->convertToString($toolCall['function']['arguments'] ?? '');
                     }
                 }
             }
@@ -570,6 +706,38 @@ class LLMAppService extends AbstractLLMAppService
         }
 
         return $hashes;
+    }
+
+    /**
+     * Convert value to string safely, handling arrays, objects, and other types.
+     *
+     * @param mixed $value Value to convert
+     * @return string String representation
+     */
+    private function convertToString($value): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+
+        if (is_null($value)) {
+            return '';
+        }
+
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        if (is_array($value) || is_object($value)) {
+            return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '';
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        // For resources or other non-serializable types
+        return gettype($value);
     }
 
     /**
@@ -780,6 +948,18 @@ class LLMAppService extends AbstractLLMAppService
             }
         }
 
+        $chatRequest = new ChatCompletionRequest(
+            messages: $messages,
+            temperature: $sendMsgDTO->getTemperature(),
+            maxTokens: $sendMsgDTO->getMaxTokens(),
+            stop: $sendMsgDTO->getStop() ?? [],
+            tools: $tools,
+        );
+        $chatRequest->setFrequencyPenalty($sendMsgDTO->getFrequencyPenalty());
+        $chatRequest->setPresencePenalty($sendMsgDTO->getPresencePenalty());
+        $chatRequest->setBusinessParams($sendMsgDTO->getBusinessParams());
+        $chatRequest->setThinking($sendMsgDTO->getThinking());
+
         return match ($sendMsgDTO->getCallMethod()) {
             AbstractRequestDTO::METHOD_COMPLETIONS => $odinModel->completions(
                 prompt: $sendMsgDTO->getPrompt(),
@@ -791,26 +971,8 @@ class LLMAppService extends AbstractLLMAppService
                 businessParams: $sendMsgDTO->getBusinessParams(),
             ),
             AbstractRequestDTO::METHOD_CHAT_COMPLETIONS => match ($sendMsgDTO->isStream()) {
-                true => $odinModel->chatStream(
-                    messages: $messages,
-                    temperature: $sendMsgDTO->getTemperature(),
-                    maxTokens: $sendMsgDTO->getMaxTokens(),
-                    stop: $sendMsgDTO->getStop() ?? [],
-                    tools: $tools,
-                    frequencyPenalty: $sendMsgDTO->getFrequencyPenalty(),
-                    presencePenalty: $sendMsgDTO->getPresencePenalty(),
-                    businessParams: $sendMsgDTO->getBusinessParams(),
-                ),
-                default => $odinModel->chat(
-                    messages: $messages,
-                    temperature: $sendMsgDTO->getTemperature(),
-                    maxTokens: $sendMsgDTO->getMaxTokens(),
-                    stop: $sendMsgDTO->getStop() ?? [],
-                    tools: $tools,
-                    frequencyPenalty: $sendMsgDTO->getFrequencyPenalty(),
-                    presencePenalty: $sendMsgDTO->getPresencePenalty(),
-                    businessParams: $sendMsgDTO->getBusinessParams(),
-                ),
+                true => $odinModel->chatStreamWithRequest($chatRequest),
+                default => $odinModel->chatWithRequest($chatRequest),
             },
             default => ExceptionBuilder::throw(MagicApiErrorCode::MODEL_RESPONSE_FAIL, 'Unsupported call method'),
         };
@@ -948,6 +1110,16 @@ class LLMAppService extends AbstractLLMAppService
         $refreshPointMinTokens = (int) $proxyModelRequest->getHeaderConfig('AWS-RefreshPointMinTokens', 5000);
         $refreshPointMinTokens = max($refreshPointMinTokens, 2048);
 
+        if (Context::has(PsrResponseInterface::class)) {
+            $response = Context::get(PsrResponseInterface::class);
+            $response = $response
+                ->withHeader('AWS-AutoCache', $autoCache ? 'true' : 'false')
+                ->withHeader('AWS-MaxCachePoints', (string) $maxCachePoints)
+                ->withHeader('AWS-MinCacheTokens', (string) $minCacheTokens)
+                ->withHeader('AWS-RefreshPointMinTokens', (string) $refreshPointMinTokens);
+            Context::set(PsrResponseInterface::class, $response);
+        }
+
         return [
             'auto_cache' => $autoCache,
             'auto_cache_config' => [
@@ -962,6 +1134,81 @@ class LLMAppService extends AbstractLLMAppService
     }
 
     /**
+     * Calculate the width-to-height ratio.
+     * @return string "1:1", "3:4", "16:9"
+     */
+    private function calculateRatio(int $width, int $height): string
+    {
+        $gcd = $this->gcd($width, $height);
+
+        $ratioWidth = $width / $gcd;
+        $ratioHeight = $height / $gcd;
+
+        return $ratioWidth . ':' . $ratioHeight;
+    }
+
+    /**
+     * Calculate the greatest common divisor using Euclidean algorithm.
+     * Improved version with proper error handling and edge case management.
+     */
+    private function gcd(int $a, int $b): int
+    {
+        // Handle edge case where both numbers are zero
+        if ($a === 0 && $b === 0) {
+            ExceptionBuilder::throw(MagicApiErrorCode::ValidateFailed);
+        }
+
+        // Use absolute values to ensure positive result
+        $a = abs($a);
+        $b = abs($b);
+
+        // Iterative approach to avoid stack overflow for large numbers
+        while ($b !== 0) {
+            $temp = $b;
+            $b = $a % $b;
+            $a = $temp;
+        }
+
+        return $a;
+    }
+
+    /**
+     * Process base64 images by uploading them to file storage and returning accessible URLs.
+     *
+     * @param array $images Array of base64 encoded images
+     * @param MagicUserAuthorization $authorization User authorization for organization context
+     * @return array Array of processed image URLs or original base64 data on failure
+     */
+    private function processBase64Images(array $images, MagicUserAuthorization $authorization): array
+    {
+        $processedImages = [];
+
+        foreach ($images as $index => $base64Image) {
+            try {
+                $subDir = 'open';
+
+                $uploadFile = new UploadFile($base64Image, $subDir, '');
+
+                $this->fileDomainService->uploadByCredential($authorization->getOrganizationCode(), $uploadFile, StorageBucketType::Public);
+
+                $fileLink = $this->fileDomainService->getLink($authorization->getOrganizationCode(), $uploadFile->getKey(), StorageBucketType::Public);
+
+                $processedImages[] = $fileLink->getUrl();
+            } catch (Exception $e) {
+                $this->logger->error('Failed to process base64 image', [
+                    'index' => $index,
+                    'error' => $e->getMessage(),
+                    'organization_code' => $authorization->getOrganizationCode(),
+                ]);
+                // If upload fails, keep the original base64 data
+                $processedImages[] = $base64Image;
+            }
+        }
+
+        return $processedImages;
+    }
+
+    /**
      * Generate conversation endpoint cache key (based on messages hash + model).
      * Now reuses the optimized calculateMultipleMessagesHashes method.
      *
@@ -973,7 +1220,7 @@ class LLMAppService extends AbstractLLMAppService
     {
         // Reuse the optimized multiple hash calculation method (removeCount = 0 for full array)
         $hashes = $this->calculateMultipleMessagesHashes($messages, 0);
-        $messagesHash = $hashes[0];
+        $messagesHash = $hashes[0] ?? hash('sha256', '');
 
         // Generate cache key using messages hash + model
         $cacheKey = $messagesHash . ':' . $model;
