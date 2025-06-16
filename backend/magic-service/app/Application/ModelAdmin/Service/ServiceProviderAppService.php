@@ -59,13 +59,17 @@ class ServiceProviderAppService
             $serviceProviderConfigDTOS = $this->serviceProviderDomainService->initOrganizationServiceProviders($organizationCode, $serviceProviderCategory);
         }
 
+        foreach ($serviceProviderConfigDTOS as $serviceProviderConfigDTO) {
+            $this->maskSensitiveConfigInfo($serviceProviderConfigDTO);
+        }
+
         // 处理图标
         $this->processServiceProviderConfigIcons($serviceProviderConfigDTOS, $organizationCode);
 
         $officeOrganization = config('service_provider.office_organization');
         if ($authenticatable->getOrganizationCode() === $officeOrganization) {
             $serviceProviderConfigDTOS = array_filter($serviceProviderConfigDTOS, function ($serviceProviderConfigDTO) {
-                return ServiceProviderCode::from($serviceProviderConfigDTO->getProviderCode()) !== ServiceProviderCode::Official;
+                return ServiceProviderCode::from($serviceProviderConfigDTO->getProviderCode()) !== ServiceProviderCode::Magic;
             });
             $serviceProviderConfigDTOS = array_values($serviceProviderConfigDTOS);
         }
