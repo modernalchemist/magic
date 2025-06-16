@@ -50,7 +50,6 @@ readonly class FileDomainService
         $this->cloudFileRepository->upload($organizationCode, $uploadFile, $storage);
     }
 
-    public function getSimpleUploadTemporaryCredential(string $organizationCode, StorageBucketType $storage = StorageBucketType::Private, ?string $contentType = null): array
     /**
      * Upload file using chunk upload.
      *
@@ -62,6 +61,11 @@ readonly class FileDomainService
     public function uploadByChunks(string $organizationCode, ChunkUploadFile $chunkUploadFile, StorageBucketType $storage = StorageBucketType::Private, bool $autoDir = true): void
     {
         $this->cloudFileRepository->uploadByChunks($organizationCode, $chunkUploadFile, $storage, $autoDir);
+    }
+
+    public function getSimpleUploadTemporaryCredential(string $organizationCode, StorageBucketType $storage = StorageBucketType::Private, ?string $contentType = null, bool $sts = false): array
+    {
+        return $this->cloudFileRepository->getSimpleUploadTemporaryCredential($organizationCode, $storage, contentType: $contentType);
     }
 
     /**
