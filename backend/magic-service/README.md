@@ -1,36 +1,36 @@
 # Magic Service
 
-## 项目概述
+## Project Overview
 
-Magic Service 是一个基于 Hyperf 框架的高性能 PHP 微服务应用，使用 Swow 协程驱动实现高并发处理能力。该项目集成了多种功能模块，包括 AI 搜索、聊天功能、文件处理、权限管理等，旨在提供一个全面的服务解决方案。
+Magic Service is a high-performance PHP microservice application based on the Hyperf framework, using the Swow coroutine driver to achieve high concurrency processing capabilities. This project integrates multiple functional modules, including AI search, chat functions, file processing, permission management, etc., aiming to provide a comprehensive service solution.
 
-## 功能特性
+## Features
 
-- **AI 搜索功能**：集成 Google 等搜索引擎的 API，提供智能搜索能力
-- **聊天系统**：支持实时通讯和会话管理
-- **文件处理**：文件上传、下载和管理功能
-- **流程管理**：支持工作流配置和执行
-- **助理功能**：可扩展的助理功能支持
+- **AI Search Function**: Integrates APIs from search engines like Google to provide intelligent search capabilities.
+- **Chat System**: Supports real-time communication and session management.
+- **File Processing**: File upload, download, and management functions.
+- **Process Management**: Supports workflow configuration and execution.
+- **Assistant Function**: Extendable assistant function support.
 
-## 环境要求
+## Environment Requirements
 
 - PHP >= 8.3
-- Swow 扩展
-- Redis 扩展
-- PDO 扩展
-- 其他扩展：bcmath, curl, fileinfo, openssl, xlswriter, zlib 等
+- Swow Extension
+- Redis Extension
+- PDO Extension
+- Other extensions: bcmath, curl, fileinfo, openssl, xlswriter, zlib, etc.
 - Composer
 
-## 安装部署
+## Installation and Deployment
 
-### 1. 克隆项目
+### 1. Clone Project
 
 ```bash
 git clone https://github.com/dtyq/magic.git
 cd magic-service
 ```
 
-### 2. 安装依赖
+### 2. Install Dependencies
 
 ```bash
 composer install
@@ -39,97 +39,97 @@ composer install
 
 
 
-### 3. 环境配置
+### 3. Environment Configuration
 
-复制环境配置文件并根据需要修改：
+Copy the environment configuration file and modify it as needed:
 
 ```bash
 cp .env.example .env
 ```
 
-### 数据库迁移
+### Database Migration
 
 ```bash
 php bin/hyperf.php migrate
 ```
 
-## 运行应用
+## Running the Application
 
-### 启动前端服务
+### Start Frontend Service
 
 ```bash
 cd static/web && npm install && npm run dev
 ```
 
-### 启动后端服务
+### Start Backend Service
 
 ```bash
 php bin/hyperf.php start
 ```
 
-也可以使用脚本启动：
+Alternatively, you can use a script to start:
 
 ```bash
 sh start.sh
 ```
 
-## 开发指南
+## Development Guide
 
-### 项目结构
+### Project Structure
 
-- `app/` - 应用代码
-  - `Application/` - 应用层代码
-  - `Domain/` - 领域层代码
-  - `Infrastructure/` - 基础设施层代码
-  - `Interfaces/` - 接口层代码
-  - `ErrorCode/` - 错误码定义
-  - `Listener/` - 事件监听器
-- `config/` - 配置文件
-- `migrations/` - 数据库迁移文件
-- `test/` - 单元测试
-- `bin/` - 可执行脚本
-- `static/` - 静态资源文件
+- `app/` - Application code
+  - `Application/` - Application layer code
+  - `Domain/` - Domain layer code
+  - `Infrastructure/` - Infrastructure layer code
+  - `Interfaces/` - Interface layer code
+  - `ErrorCode/` - Error code definitions
+  - `Listener/` - Event listeners
+- `config/` - Configuration files
+- `migrations/` - Database migration files
+- `test/` - Unit tests
+- `bin/` - Executable scripts
+- `static/` - Static resource files
 
-### 代码规范
+### Code Standards
 
-项目使用 PHP-CS-Fixer 进行代码风格检查与修复：
+The project uses PHP-CS-Fixer for code style checking and fixing:
 
 ```bash
 composer fix
 ```
 
-使用 PHPStan 进行静态代码分析：
+Use PHPStan for static code analysis:
 
 ```bash
 composer analyse
 ```
 
-### 单元测试
+### Unit Tests
 
-使用以下命令运行单元测试：
+Use the following command to run unit tests:
 
 ```bash
 vendor/bin/phpunit
-# 或使用
+# Or use
 composer test
 ```
 
-## Docker 部署
+## Docker Deployment
 
-项目提供了 Dockerfile，可以使用以下命令构建镜像：
+The project provides a Dockerfile, and you can use the following command to build the image:
 
 ```bash
 docker build -t magic-service .
 ```
 
-## 贡献指南
+## Contribution Guide
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 提交 Pull Request
+1. Fork Project
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add some amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Submit Pull Request
 
-## 许可证
+## License
 
-该项目采用 MIT 许可证 - 详情请查看 LICENSE 文件
+This project is licensed under the MIT License - see the LICENSE file for details.

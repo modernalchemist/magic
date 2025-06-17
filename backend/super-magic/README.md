@@ -1,54 +1,54 @@
 # SuperMagic
 
-SuperMagic 是 Magic 产品矩阵的旗舰产品，是一个专为复杂任务场景设计的**通用人工智能系统(AGI)**。它通过多智能体设计系统和丰富的工具能力，支持**自主任务理解**、**自主任务规划**、**自主行动**以及**自主错误修正**等智能能力。SuperMagic 可以理解自然语言指令，执行各种业务流程，并交付最终目标结果。
+SuperMagic is the flagship product of the Magic product matrix, a **general artificial intelligence system (AGI)** designed for complex task scenarios. Through its multi-agent design system and rich tool capabilities, SuperMagic supports intelligent abilities such as **autonomous task understanding**, **autonomous task planning**, **autonomous action**, and **autonomous error correction**. SuperMagic can understand natural language instructions, execute various business processes, and deliver final target results.
 
-作为 Magic 产品矩阵的旗舰产品，SuperMagic 通过开源提供强大的二次开发能力，使企业能够快速构建和部署满足特定业务需求的智能助手，大幅提升决策效率和质量。
+As the flagship product of the Magic product matrix, SuperMagic provides powerful secondary development capabilities through open source, enabling enterprises to quickly build and deploy intelligent assistants that meet specific business needs, significantly improving decision-making efficiency and quality.
 
-## 主要特性
+## Main Features
 
-- **多工具支持**：预加载常用工具，包括 Python 执行、网络搜索、浏览器操作、文件操作等
-- **状态管理**：完善的状态管理机制，支持 IDLE、RUNNING、FINISHED、ERROR 等状态
-- **执行控制**：支持最大迭代次数限制和输出长度限制
-- **多智能体协作**：支持多个智能体协同工作，处理复杂任务场景
-- **无缝集成**：与 Magic Flow 等产品矩阵无缝集成，实现更强大的工作流编排
+- **Multi-tool Support**: Preloads common tools, including Python execution, web search, browser operations, file operations, etc.
+- **State Management**: A complete state management mechanism, supporting IDLE, RUNNING, FINISHED, ERROR, and other states.
+- **Execution Control**: Supports limits on the maximum number of iterations and output length.
+- **Multi-agent Collaboration**: Supports multiple intelligent agents working together to handle complex task scenarios.
+- **Seamless Integration**: Seamlessly integrates with other products in the Magic matrix, such as Magic Flow, to achieve more powerful workflow orchestration.
 
-## 安装要求
+## Installation Requirements
 
 - Python 3.12+
-- 大模型 API 密钥（Claude、OpenAI、DeepSeek V3、Qwen）
-- 相关依赖包
+- Large model API keys (Claude, OpenAI, DeepSeek V3, Qwen)
+- Related dependency packages
 
-## 环境变量设置
+## Environment Variable Settings
 
-在使用前，请确保您已通过 `.env` 文件或系统设置环境变量。
+Before use, please ensure that you have set environment variables through a `.env` file or system settings.
 
-必需的环境变量：
-- `OPENAI_API_KEY`：OpenAI API密钥
+Required environment variables:
+- `OPENAI_API_KEY`: OpenAI API key
 
-## 应用案例
+## Application Cases
 
-SuperMagic 可应用于各种复杂业务场景，以下是一些典型案例：
+SuperMagic can be applied to various complex business scenarios. Here are some typical cases:
 
-- [沃伦·巴菲特2025年股东大会投资洞察分析](https://www.letsmagic.cn/share/777665156986277889)
-- [北京仿人机器人半程马拉松相关股票分析](https://www.letsmagic.cn/share/774280936479625217)
-- [《思考，快与慢》核心概念总结](https://www.letsmagic.cn/share/777461325648195584)
-- [上海阿姨IPO分析与投资建议](https://www.letsmagic.cn/share/777604044873928705)
-- [SKU销售预测需求](https://www.letsmagic.cn/share/771022574397648897)
+- [Warren Buffett's 2025 Shareholder Meeting Investment Insights Analysis](https://www.letsmagic.cn/share/777665156986277889)
+- [Beijing Humanoid Robot Half Marathon Related Stock Analysis](https://www.letsmagic.cn/share/774280936479625217)
+- [Summary of Core Concepts from "Thinking, Fast and Slow"](https://www.letsmagic.cn/share/777461325648195584)
+- [Shanghai Auntie IPO Analysis and Investment Advice](https://www.letsmagic.cn/share/777604044873928705)
+- [SKU Sales Forecast Demand](https://www.letsmagic.cn/share/771022574397648897)
 
-更多案例请访问[官方网站](https://www.letsmagic.cn)。
+For more cases, please visit the [official website](https://www.letsmagic.cn).
 
-## 相关项目
+## Related Projects
 
-SuperMagic 是 Magic 产品矩阵的一部分，与以下产品协同工作：
+SuperMagic is part of the Magic product matrix and works协同 with the following products:
 
-- **[Magic IM](https://github.com/dtyq/magic)** - 集成AI代理对话与企业内部通讯的企业级即时通讯系统
-- **[Magic Flow](https://github.com/dtyq/magic-flow)** - 强大的可视化AI工作流编排系统
-- **[Agentlang](https://github.com/dtyq/agentlang)** - 以语言为中心的AI代理框架，用于使用自然语言构建AI代理
+- **[Magic IM](https://github.com/dtyq/magic)** - An enterprise-level instant messaging system that integrates AI agent dialogues with internal corporate communication.
+- **[Magic Flow](https://github.com/dtyq/magic-flow)** - A powerful visual AI workflow orchestration system.
+- **[Agentlang](https://github.com/dtyq/agentlang)** - A language-centric AI agent framework for building AI agents using natural language.
 
-## 贡献与支持
+## Contribution and Support
 
-欢迎为SuperMagic贡献代码或提出建议。如果您发现任何问题，请在GitHub仓库提交issue。
+Contributions to SuperMagic code or suggestions are welcome. If you find any issues, please submit an issue in the GitHub repository.
 
-## 许可证
+## License
 
-本项目遵循[Magic开源许可证](https://github.com/dtyq/magic/blob/main/LICENSE)，本质上是Apache 2.0但有一些额外限制。
+This project follows the [Magic Open Source License](https://github.com/dtyq/magic/blob/main/LICENSE), which is essentially Apache 2.0 with some additional restrictions.
