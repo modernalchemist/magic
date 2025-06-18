@@ -208,8 +208,8 @@ JSON,
             true
         );
         $condition = $this->builder->build($conditionArray);
-        $this->assertEquals('((false))', $condition->getCode());
-        $this->assertFalse($condition->getResult());
+        $this->assertEquals('((true))', $condition->getCode());
+        $this->assertTrue($condition->getResult());
     }
 
     public function testNumberCondition()
