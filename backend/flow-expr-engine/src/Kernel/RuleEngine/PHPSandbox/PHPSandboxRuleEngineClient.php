@@ -94,6 +94,20 @@ class PHPSandboxRuleEngineClient implements RuleEngineClientInterface
                     $eq = '==';
                     $notEq = '!=';
                 }
+
+                // Handle Empty and NotEmpty comparisons specially for constant values
+                if (in_array($conditionItem->getCompareType(), [CompareType::Empty, CompareType::NotEmpty, CompareType::Valuable, CompareType::NoValuable], true)
+                    && ! (str_starts_with($left, '($') || str_starts_with($left, '$'))) {
+                    // Determine if the constant value is empty
+                    $isEmpty = ($left === null || $left === 'null' || $left === '' || $left === '0' || $left === 'false' || $left === '[]');
+
+                    return match ($conditionItem->getCompareType()) {
+                        CompareType::Empty, CompareType::Valuable => $isEmpty ? 'true' : 'false',
+                        CompareType::NotEmpty, CompareType::NoValuable => $isEmpty ? 'false' : 'true',
+                        default => 'false',
+                    };
+                }
+
                 return match ($conditionItem->getCompareType()) {
                     CompareType::Equals => "{$left} {$eq} {$right}",
                     CompareType::NoEquals => "{$left} {$notEq} {$right}",
