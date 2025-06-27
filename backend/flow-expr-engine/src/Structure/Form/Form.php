@@ -483,20 +483,30 @@ class Form extends Structure
 
             if ($this->getItems()->getType()->isComplex()) {
                 $count = count($input);
-                $properties = null;
+                $properties = [];
                 for ($i = 0; $i < $count; ++$i) {
-                    $items = clone $this->getItems();
+                    // Use existing property if available, otherwise clone items
+                    $existingProperty = $this->getProperties()[$i] ?? null;
+                    if ($existingProperty) {
+                        $items = $existingProperty;
+                    } else {
+                        $items = clone $this->getItems();
+                        $items->setKey((string) $i);
+                        $items->setSort($i);
+                    }
                     $items->appendConstValue($input[$i] ?? []);
-                    $properties[] = $items;
+                    $properties[$i] = $items;
                 }
             } else {
-                $properties = null;
+                $properties = [];
                 $index = 0;
                 foreach ($input as $item) {
                     $property = clone $this->getItems();
+                    $property->setKey((string) $index);
                     $property->setValue(Value::buildConst($item));
-                    $property->setSort($index++);
-                    $properties[] = $property;
+                    $property->setSort($index);
+                    $properties[$index] = $property;
+                    ++$index;
                 }
             }
             $this->setProperties($properties);
