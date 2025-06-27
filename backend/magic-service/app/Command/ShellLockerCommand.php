@@ -59,7 +59,7 @@ class ShellLockerCommand extends HyperfCommand
 
         if (! $this->locker->mutexLock($lockKey, $lockOwner, $timeout)) {
             $this->error('Failed to acquire migration lock. Another migration process may be running.');
-            exit(1);
+            return;
         }
 
         try {
@@ -70,7 +70,7 @@ class ShellLockerCommand extends HyperfCommand
             $migrationResult = $this->executeMigrationCommand('migrate --force');
             if ($migrationResult !== 0) {
                 $this->error('Main migration failed');
-                exit(1);
+                return;
             }
 
             // Execute vendor migrations
@@ -78,13 +78,12 @@ class ShellLockerCommand extends HyperfCommand
             $vendorResult = $this->executeMigrationCommand('migrate:vendor');
             if ($vendorResult !== 0) {
                 $this->error('Vendor migration failed');
-                exit(1);
+                return;
             }
 
             $this->info('All migrations completed successfully');
         } catch (Throwable $e) {
             $this->error('Migration failed with exception: ' . $e->getMessage());
-            exit(1);
         } finally {
             // Always release the lock
             $this->locker->release($lockKey, $lockOwner);
