@@ -92,6 +92,21 @@ class Form extends Structure
         $this->setEncryption($encryption, $encryptionValue);
     }
 
+    public function __clone()
+    {
+        if ($this->properties !== null) {
+            foreach ($this->properties as $key => $property) {
+                $this->properties[$key] = clone $property;
+            }
+        }
+        if ($this->items !== null) {
+            $this->items = clone $this->items;
+        }
+        if ($this->value !== null) {
+            $this->value = clone $this->value;
+        }
+    }
+
     public function isRoot(): bool
     {
         return $this->key === Form::ROOT_KEY;
