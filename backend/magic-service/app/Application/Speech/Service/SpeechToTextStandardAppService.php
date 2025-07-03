@@ -41,7 +41,7 @@ class SpeechToTextStandardAppService
         return $this->volcengineClient->submitTask($submitDTO);
     }
 
-    public function submitBigModelTask(BigModelSpeechSubmitDTO $submitDTO): array
+    public function submitLargeModelTask(BigModelSpeechSubmitDTO $submitDTO): array
     {
         $this->validateAccessToken($submitDTO->getAccessToken(), $submitDTO->getIps());
         $submitDTO->getAudio()->setUrl(SSRFUtil::getSafeUrl($submitDTO->getAudio()->getUrl(), replaceIp: false));
@@ -54,7 +54,7 @@ class SpeechToTextStandardAppService
         return $this->volcengineClient->queryResult($queryDTO);
     }
 
-    public function queryBigModelResult(SpeechQueryDTO $speechQueryDTO): array
+    public function queryLargeModelResult(SpeechQueryDTO $speechQueryDTO): array
     {
         $this->validateAccessToken($speechQueryDTO->getAccessToken(), []);
         return $this->volcengineClient->queryBigModelResult($speechQueryDTO->getTaskId());
