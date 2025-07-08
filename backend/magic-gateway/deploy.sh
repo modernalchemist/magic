@@ -40,7 +40,7 @@ fi
 if [ "$1" != "test" ] && [ "$1" != "pre" ] && [ "$1" != "prod" ] && [ "$1" != "all" ]; then
   show_help
   exit 1
-fi
+fix
 
 # 操作参数检查
 if [ "$2" != "start" ] && [ "$2" != "stop" ] && [ "$2" != "restart" ] && [ "$2" != "logs" ] && [ "$2" != "status" ]; then
@@ -134,7 +134,7 @@ function start_env {
   else
     echo -e "${YELLOW}创建Redis容器...${NC}"
     # 直接启动Redis容器，不通过docker-compose
-    docker run -d --name api-gateway-redis --network magic-sandbox-network -p ${redis_port}:6379 -v $(pwd)/redis_data:/data redis:alpine redis-server --appendonly yes
+    docker run -d --name api-gateway-redis --network magic-sandbox-network -p ${redis_port}:6379 -v $(pwd)/redis_data:/data public.ecr.aws/docker/library/redis:alpine redis-server --appendonly yes
   fi
 
   # 获取Redis容器的IP地址
