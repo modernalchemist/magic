@@ -30,7 +30,6 @@ use Dtyq\SuperMagic\ErrorCode\SuperAgentErrorCode;
 use Dtyq\SuperMagic\Infrastructure\ExternalAPI\SandboxOS\Gateway\SandboxGatewayInterface;
 use Dtyq\SuperMagic\Infrastructure\Utils\WorkDirectoryUtil;
 use Exception;
-use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -827,7 +826,7 @@ class WorkspaceDomainService
         return $result;
     }
 
-    public function diffFileListAndVersionFile(array $result, int $projectId, string $taskId, string $sandboxId, string $organizationCode = ''): bool
+    public function diffFileListAndVersionFile(array $result, int $projectId,  string $taskId, string $sandboxId, string $organizationCode = ''): bool
     {
         $dir = '.workspace';
         $workspaceVersion = $this->getWorkspaceVersionByProjectId($projectId, $dir);
