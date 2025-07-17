@@ -322,12 +322,11 @@ class ProjectAppService extends AbstractAppService
         ];
     }
 
-    public function checkFileListUpdate(RequestContext $requestContext, int $projectId,DataIsolation $dataIsolation): array
+    public function checkFileListUpdate(RequestContext $requestContext, int $projectId, DataIsolation $dataIsolation): array
     {
         //$userAuthorization = $requestContext->getUserAuthorization();
 
-
-        //        $projectEntity = $this->projectDomainService->getProject($projectId, $userAuthorization->getId());
+//        $projectEntity = $this->projectDomainService->getProject($projectId, $userAuthorization->getId());
 
         // 通过领域服务获取话题附件列表
 //         $result = $this->taskDomainService->getTaskAttachmentsByTopicId(
@@ -347,7 +346,6 @@ class ProjectAppService extends AbstractAppService
 //        }
 
         $lastUpdatedAt = $this->taskFileDomainService->getLatestUpdatedByProjectId($projectId);
-
         return [
             'last_updated_at' => $lastUpdatedAt,
         ];
