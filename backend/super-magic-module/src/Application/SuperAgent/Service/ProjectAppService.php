@@ -303,7 +303,6 @@ class ProjectAppService extends AbstractAppService
     {
         $userAuthorization = $requestContext->getUserAuthorization();
 
-
         $projectEntity = $this->projectDomainService->getProject($projectId, $userAuthorization->getId());
 
         // 通过领域服务获取话题附件列表
