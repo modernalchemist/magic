@@ -47,6 +47,8 @@ class ServiceProviderModelsDTO extends AbstractDTO
 
     protected array $visibleApplications = [];
 
+    protected int $loadBalancingWeight = 50;
+
     protected array $visiblePackages = [];
 
     public function getDisabledBy(): ?string
@@ -226,6 +228,16 @@ class ServiceProviderModelsDTO extends AbstractDTO
     public function setVisibleApplications(array $visibleApplications): void
     {
         $this->visibleApplications = $visibleApplications;
+    }
+
+    public function getLoadBalancingWeight(): int
+    {
+        return $this->loadBalancingWeight;
+    }
+
+    public function setLoadBalancingWeight(int $loadBalancingWeight): void
+    {
+        $this->loadBalancingWeight = $loadBalancingWeight;
     }
 
     public function getSuperMagicDisplayState(): int
