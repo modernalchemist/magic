@@ -385,7 +385,7 @@ class ProjectAppService extends AbstractAppService
             $requestDTO->getFileType()
         );
 
-        $workDir = $this->fileDomainService->getFullWorkDir(
+        $fullWorkDir = $this->fileDomainService->getFullWorkDir(
             $dataIsolation->getCurrentOrganizationCode(),
             $dataIsolation->getCurrentUserId(),
             (int) $requestDTO->getProjectId(),
@@ -393,7 +393,7 @@ class ProjectAppService extends AbstractAppService
             AgentConstant::DEFAULT_PROJECT_DIR
         );
 
-        $result = $this->workspaceDomainService->filterResultByGitVersion($result, (int) $requestDTO->getProjectId(), $dataIsolation->getCurrentOrganizationCode(), $workDir);
+        $result = $this->workspaceDomainService->filterResultByGitVersion($result, (int) $requestDTO->getProjectId(), $dataIsolation->getCurrentOrganizationCode(), $fullWorkDir);
 
         // 处理文件 URL
         $list = [];
