@@ -8,13 +8,11 @@ declare(strict_types=1);
 namespace Dtyq\SuperMagic\Application\SuperAgent\Event\Subscribe;
 
 use App\Application\Chat\Service\MagicAgentEventAppService;
-use App\Application\MCP\SupperMagicMCP\SupperMagicAgentMCPInterface;
 use App\Domain\Chat\DTO\Message\MagicMessageStruct;
 use App\Domain\Chat\DTO\Message\TextContentInterface;
 use App\Domain\Chat\Event\Agent\UserCallAgentEvent;
 use App\Domain\Chat\Service\MagicConversationDomainService;
 use App\Domain\Contact\Entity\ValueObject\DataIsolation;
-use App\Domain\MCP\Entity\ValueObject\MCPDataIsolation;
 use App\Interfaces\Chat\Assembler\SeqAssembler;
 use Dtyq\SuperMagic\Application\SuperAgent\DTO\UserMessageDTO;
 use Dtyq\SuperMagic\Application\SuperAgent\Service\HandleUserMessageAppService;
@@ -117,15 +115,6 @@ class SuperAgentMessageSubscriberV2 extends MagicAgentEventAppService
             // Parse topic mode from super agent extra
             $topicModeValue = $superAgentExtra?->getTopicPattern();
             $topicMode = $topicModeValue ? TopicMode::tryFrom($topicModeValue) ?? TopicMode::GENERAL : TopicMode::GENERAL;
-
-            // raw content
-            $rawContent = $this->getRawContent($userCallAgentEvent);
-
-            // MCP config
-            $mcpDataIsolation = MCPDataIsolation::create(
-                $dataIsolation->getCurrentOrganizationCode(),
-                $dataIsolation->getCurrentUserId()
-            );
 
             // Create user message DTO
             $userMessageDTO = new UserMessageDTO(

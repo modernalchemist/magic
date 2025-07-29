@@ -484,7 +484,6 @@ class AgentDomainService
             userInfo: $userInfo,
         );
 
-
         // chat history
         $fullPrefix = $this->cloudFileRepository->getFullPrefix($dataIsolation->getCurrentOrganizationCode());
         $chatWorkDir = WorkDirectoryUtil::getAgentChatHistoryDir($dataIsolation->getCurrentUserId(), $taskContext->getProjectId());

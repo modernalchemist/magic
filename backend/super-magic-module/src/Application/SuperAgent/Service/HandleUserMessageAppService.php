@@ -46,6 +46,8 @@ class HandleUserMessageAppService extends AbstractAppService
 {
     protected LoggerInterface $logger;
 
+    private ?SupperMagicAgentMCPInterface $supperMagicAgentMCP = null;
+
     public function __construct(
         private readonly TopicDomainService $topicDomainService,
         private readonly TaskDomainService $taskDomainService,
