@@ -83,6 +83,7 @@ class SandboxApi extends AbstractApi
 
         // 从请求中创建DTO
         $apiKey = $this->getApiKey();
+
         if (empty($apiKey)) {
             ExceptionBuilder::throw(GenericErrorCode::ParameterMissing, 'The api key of header is required');
         }
