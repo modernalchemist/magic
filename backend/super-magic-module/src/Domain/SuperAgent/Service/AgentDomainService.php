@@ -34,6 +34,7 @@ use Dtyq\SuperMagic\Infrastructure\ExternalAPI\SandboxOS\Gateway\Result\BatchSta
 use Dtyq\SuperMagic\Infrastructure\ExternalAPI\SandboxOS\Gateway\Result\SandboxStatusResult;
 use Dtyq\SuperMagic\Infrastructure\ExternalAPI\SandboxOS\Gateway\SandboxGatewayInterface;
 use Dtyq\SuperMagic\Infrastructure\Utils\WorkDirectoryUtil;
+use Hyperf\Contract\TranslatorInterface;
 use Hyperf\Logger\LoggerFactory;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -465,6 +466,8 @@ class AgentDomainService
         // 2. 构建元数据
         $userInfoArray = $this->userInfoAppService->getUserInfo($dataIsolation->getCurrentUserId(), $dataIsolation);
         $userInfo = UserInfoValueObject::fromArray($userInfoArray);
+        $translator = di(TranslatorInterface::class);
+        $language = $translator->getLocale();
         $messageMetadata = new MessageMetadata(
             agentUserId: $taskContext->getAgentUserId(),
             userId: $dataIsolation->getCurrentUserId(),
@@ -474,8 +477,12 @@ class AgentDomainService
             instruction: $taskContext->getInstruction()->value,
             sandboxId: $taskContext->getSandboxId(),
             superMagicTaskId: (string) $taskContext->getTask()->getId(),
-            userInfo: $userInfo
+            workspaceId: $taskContext->getWorkspaceId(),
+            projectId: (string) $taskContext->getTask()->getProjectId(),
+            language: $language,
+            userInfo: $userInfo,
         );
+
 
         // chat history
         $fullPrefix = $this->cloudFileRepository->getFullPrefix($dataIsolation->getCurrentOrganizationCode());
