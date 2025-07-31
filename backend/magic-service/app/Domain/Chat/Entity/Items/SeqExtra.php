@@ -25,6 +25,9 @@ class SeqExtra extends AbstractEntity
      */
     protected ?int $magicEnvId = null;
 
+
+    protected ?string $language = null;
+
     public function getMagicEnvId(): ?int
     {
         return $this->magicEnvId;
@@ -54,5 +57,16 @@ class SeqExtra extends AbstractEntity
             'magic_env_id' => $this->getMagicEnvId(),
             'topic_id' => $this->getTopicId(),
         ];
+    }
+
+    public function getLanguage(): ?string
+    {
+        return $this->language;
+    }
+
+    public function setLanguage(?string $language): self
+    {
+        $this->language = $language;
+        return $this;
     }
 }
