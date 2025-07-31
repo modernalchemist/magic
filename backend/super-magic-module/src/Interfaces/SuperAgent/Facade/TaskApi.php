@@ -54,6 +54,7 @@ class TaskApi extends AbstractApi
         LoggerFactory $loggerFactory,
     ) {
         $this->logger = $loggerFactory->get(get_class($this));
+        parent::__construct($request);
     }
 
     /**
