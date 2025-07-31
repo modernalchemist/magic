@@ -303,7 +303,7 @@ class ProjectAppService extends AbstractAppService
     {
         $userAuthorization = $requestContext->getUserAuthorization();
 
-         $projectEntity = $this->projectDomainService->getProject($projectId, $userAuthorization->getId());
+        $projectEntity = $this->projectDomainService->getProject($projectId, $userAuthorization->getId());
 
         // 通过领域服务获取话题附件列表
         $result = $this->taskDomainService->getTaskAttachmentsByTopicId(
@@ -333,7 +333,7 @@ class ProjectAppService extends AbstractAppService
         $topicEntity = $this->topicDomainService->getTopicById($projectEntity->getCurrentTopicId());
         $taskEntity = $this->taskDomainService->getTaskBySandboxId($topicEntity->getSandboxId());
         # #检测git version 跟database 的files表是否匹配
-        $result = $this->workspaceDomainService->diffFileListAndVersionFile($result, $projectId,  (string) $taskEntity->getId(), $topicEntity->getSandboxId(), $dataIsolation->getCurrentOrganizationCode());
+        $result = $this->workspaceDomainService->diffFileListAndVersionFile($result, $projectId, (string) $taskEntity->getId(), $topicEntity->getSandboxId(), $dataIsolation->getCurrentOrganizationCode());
         if ($result) {
             $lastUpdatedAt = date('Y-m-d H:i:s');
         }

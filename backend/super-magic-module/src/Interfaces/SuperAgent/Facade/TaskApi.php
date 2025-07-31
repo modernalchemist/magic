@@ -26,17 +26,6 @@ use Dtyq\SuperMagic\Interfaces\SuperAgent\DTO\Request\GetTaskFilesRequestDTO;
 use Dtyq\SuperMagic\Interfaces\SuperAgent\DTO\TopicTaskMessageDTO;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Qbhy\HyperfAuth\AuthManager;
-use Dtyq\SuperMagic\Interfaces\SuperAgent\DTO\Request\SaveWorkspaceRequestDTO;
-use Dtyq\SuperMagic\Interfaces\SuperAgent\DTO\Request\UserInfoRequestDTO;
-use Dtyq\SuperMagic\Interfaces\SuperAgent\DTO\Request\CreateProjectRequestDTO;
-use Dtyq\SuperMagic\Interfaces\SuperAgent\DTO\Request\SaveTopicRequestDTO;
-use Dtyq\SuperMagic\Interfaces\SuperAgent\DTO\Response\CreateTaskApiResponseDTO;
-use Dtyq\SuperMagic\Application\SuperAgent\Service\HandleApiMessageAppService;
-use App\Domain\Contact\Entity\ValueObject\DataIsolation;
-use Dtyq\SuperMagic\Application\SuperAgent\DTO\UserMessageDTO;
-use App\Domain\Contact\Entity\ValueObject\UserType;
-use Dtyq\SuperMagic\Infrastructure\ExternalAPI\SandboxOS\Gateway\Constant\SandboxStatus;
-
 
 #[ApiResponse('low_code')]
 class TaskApi extends AbstractApi
@@ -52,7 +41,7 @@ class TaskApi extends AbstractApi
         protected UserDomainService $userDomainService,
         protected HandleTaskMessageAppService $handleTaskMessageAppService,
         protected AgentAppService $agentAppService,
-        ) {
+    ) {
     }
 
     /**
