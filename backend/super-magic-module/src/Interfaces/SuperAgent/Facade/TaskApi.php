@@ -32,6 +32,7 @@ use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\Logger\LoggerFactory;
 use Psr\Log\LoggerInterface;
 use Qbhy\HyperfAuth\AuthManager;
+use Throwable;
 
 #[ApiResponse('low_code')]
 class TaskApi extends AbstractApi
@@ -49,7 +50,7 @@ class TaskApi extends AbstractApi
         protected UserDomainService $userDomainService,
         protected HandleTaskMessageAppService $handleTaskMessageAppService,
         protected AgentAppService $agentAppService,
-    protected FileConverterAppService $fileConverterAppService,
+        protected FileConverterAppService $fileConverterAppService,
         LoggerFactory $loggerFactory,
     ) {
         $this->logger = $loggerFactory->get(get_class($this));
