@@ -124,7 +124,6 @@ class TopicApi extends AbstractApi
         $userQuestion = $this->request->input('user_question', '');
         $language = $this->translator->getLocale();
 
-        var_dump($language, 'language==========');
         return $this->topicAppService->renameTopic($authorization, (int) $topicId, $userQuestion, $language);
     }
 
