@@ -29,8 +29,6 @@ class AgentAppService
 
     public function __construct(
         LoggerFactory $loggerFactory,
-        private SandboxGatewayInterface $gateway,
-        private readonly FileProcessAppService $fileProcessAppService,
         private readonly AgentDomainService $agentDomainService,
     ) {
         $this->logger = $loggerFactory->get('sandbox');

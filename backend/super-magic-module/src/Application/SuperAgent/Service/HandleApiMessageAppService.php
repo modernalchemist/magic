@@ -26,11 +26,13 @@ use Dtyq\SuperMagic\Domain\SuperAgent\Entity\ValueObject\ChatInstruction;
 use Dtyq\SuperMagic\Domain\SuperAgent\Entity\ValueObject\TaskContext;
 use Dtyq\SuperMagic\Domain\SuperAgent\Entity\ValueObject\TaskStatus;
 use Dtyq\SuperMagic\Domain\SuperAgent\Event\RunTaskBeforeEvent;
+use Dtyq\SuperMagic\Domain\SuperAgent\Service\AgentDomainService;
 use Dtyq\SuperMagic\Domain\SuperAgent\Service\TaskDomainService;
+use Dtyq\SuperMagic\Domain\SuperAgent\Service\TaskFileDomainService;
 use Dtyq\SuperMagic\Domain\SuperAgent\Service\TopicDomainService;
 use Dtyq\SuperMagic\ErrorCode\SuperAgentErrorCode;
 use Dtyq\SuperMagic\Infrastructure\ExternalAPI\SandboxOS\Gateway\Constant\SandboxStatus;
-use Dtyq\SuperMagic\Interfaces\SuperAgent\DTO\Request\CreateTaskApiRequestDTO;
+use Dtyq\SuperMagic\Infrastructure\Utils\WorkDirectoryUtil;
 use Hyperf\Logger\LoggerFactory;
 use Hyperf\Odin\Message\Role;
 use Psr\Log\LoggerInterface;
@@ -52,49 +54,16 @@ class HandleApiMessageAppService extends AbstractAppService
         private readonly MagicDepartmentUserDomainService $departmentUserDomainService,
         private readonly TopicTaskAppService $topicTaskAppService,
         private readonly FileProcessAppService $fileProcessAppService,
-        private readonly ClientMessageAppService $clientMessageAppService,
         private readonly AgentAppService $agentAppService,
+        private readonly AgentDomainService $agentDomainService,
         private readonly AccessTokenDomainService $accessTokenDomainService,
         private readonly MagicUserDomainService $userDomainService,
+        private readonly TaskFileDomainService $taskFileDomainService,
         LoggerFactory $loggerFactory
     ) {
         $this->logger = $loggerFactory->get(get_class($this));
     }
 
-    public function handleInternalMessage(DataIsolation $dataIsolation, CreateTaskApiRequestDTO $dto)
-    {
-        // Get topic information
-        $topicEntity = $this->topicDomainService->getTopicByChatTopicId($dataIsolation, $dto->getTopicId());
-        if (is_null($topicEntity)) {
-            ExceptionBuilder::throw(SuperAgentErrorCode::TOPIC_NOT_FOUND, 'topic.topic_not_found');
-        }
-        // Get task information
-        $taskEntity = $this->taskDomainService->getTaskById($topicEntity->getCurrentTaskId());
-        if (is_null($taskEntity)) {
-            ExceptionBuilder::throw(SuperAgentErrorCode::TASK_NOT_FOUND, 'task.task_not_found');
-        }
-        // Update task status
-        $this->topicTaskAppService->updateTaskStatus(
-            dataIsolation: $dataIsolation,
-            task: $taskEntity,
-            status: TaskStatus::Suspended,
-            errMsg: 'User manually terminated task',
-        );
-        // Get sandbox status, if sandbox is running, send interrupt command
-        $result = $this->agentAppService->getSandboxStatus($topicEntity->getSandboxId());
-        if ($result->getStatus() === SandboxStatus::RUNNING) {
-            $this->agentAppService->sendInterruptMessage($dataIsolation, $taskEntity->getSandboxId(), (string) $taskEntity->getId(), '任务已终止.');
-        } else {
-            // Send interrupt message directly to client
-            $this->clientMessageAppService->sendInterruptMessageToClient(
-                topicId: $topicEntity->getId(),
-                taskId: $topicEntity->getCurrentTaskId() ?? '0',
-                chatTopicId: $dto->getTopicId(),
-                chatConversationId: $dto->getConversationId(),
-                interruptReason: $dto->getPrompt() ?: trans('agent.agent_stopped')
-            );
-        }
-    }
     /*
     * user send message to agent
     */
@@ -390,8 +359,15 @@ class HandleApiMessageAppService extends AbstractAppService
     private function createAndSendMessageToAgent(DataIsolation $dataIsolation, TaskContext $taskContext): string
     {
         // Create sandbox container
-        $sandboxId = $this->agentAppService->createSandbox((string) $taskContext->getProjectId(), $taskContext->getSandboxId());
-        $taskContext->setSandboxId($sandboxId);
+        $fullPrefix = $this->taskFileDomainService->getFullPrefix($dataIsolation->getCurrentOrganizationCode());
+        $fullWorkdir = WorkDirectoryUtil::getFullWorkdir($fullPrefix, $taskContext->getTask()->getWorkDir());
+
+        if (empty($taskContext->getSandboxId())) {
+            $sandboxId = (string) $taskContext->getTopicId();
+        } else {
+            $sandboxId = $taskContext->getSandboxId();
+        }
+        $sandboxId = $this->agentDomainService->createSandbox((string) $taskContext->getProjectId(), $sandboxId, $fullWorkdir);
 
         // Initialize agent
         $this->agentAppService->initializeAgent($dataIsolation, $taskContext);
