@@ -25,7 +25,6 @@ class SeqExtra extends AbstractEntity
      */
     protected ?int $magicEnvId = null;
 
-
     protected ?string $language = null;
 
     public function getMagicEnvId(): ?int
