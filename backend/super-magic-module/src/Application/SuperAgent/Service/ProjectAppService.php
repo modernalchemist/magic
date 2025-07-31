@@ -346,6 +346,7 @@ class ProjectAppService extends AbstractAppService
         //        }
 
         $lastUpdatedAt = $this->taskFileDomainService->getLatestUpdatedByProjectId($projectId);
+
         return [
             'last_updated_at' => $lastUpdatedAt,
         ];
