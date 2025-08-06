@@ -480,7 +480,7 @@ class LLMAppService extends AbstractLLMAppService
             }
             /* @phpstan-ignore-next-line */
             if ($model instanceof AwsBedrockModel && method_exists($model, 'setConfig')) {
-                $model->setConfig(array_merge($model->getConfig(), $this->createAwsAutoCacheConfig($proxyModelRequest)));
+                $model->setConfig(array_merge($model->getConfig(), $this->createAwsAutoCacheConfig($proxyModelRequest, $model->getModelName())));
             }
 
             // Record start time
@@ -1074,8 +1074,12 @@ class LLMAppService extends AbstractLLMAppService
         });
     }
 
-    private function createAwsAutoCacheConfig(ProxyModelRequestInterface $proxyModelRequest): array
+    private function createAwsAutoCacheConfig(ProxyModelRequestInterface $proxyModelRequest, string $modelName): array
     {
+        // 只有包含 anthropic.claude 的模型
+        if (! str_contains($modelName, 'anthropic.claude')) {
+            return [];
+        }
         $autoCache = $proxyModelRequest->getHeaderConfig('AWS-AutoCache', true);
         if ($autoCache === 'false') {
             $autoCache = false;
