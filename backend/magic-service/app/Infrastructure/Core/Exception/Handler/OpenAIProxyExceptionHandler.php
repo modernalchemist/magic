@@ -12,7 +12,6 @@ use App\Infrastructure\Core\Exception\BusinessException;
 use App\Infrastructure\Util\Context\CoContext;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\Odin\Exception\LLMException;
-use Hyperf\Odin\Exception\OdinException;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
@@ -22,25 +21,15 @@ class OpenAIProxyExceptionHandler extends AbstractExceptionHandler
     {
         $this->stopPropagation();
 
-        $statusCode = 400;
-        $errorCode = $throwable->getCode();
+        $statusCode = 500;
+        $errorCode = 500;
+        $errorMessage = 'Internal Server Error';
 
-        $previousException = $throwable->getPrevious();
-        if ($previousException instanceof LLMException) {
-            $errorMessage = $previousException->getPrevious()?->getMessage() ?? $previousException->getMessage();
-        } elseif ($previousException instanceof OdinException) {
-            $errorMessage = $previousException->getMessage();
-        } elseif ($previousException instanceof BusinessException) {
-            $errorMessage = $previousException->getMessage();
-            $errorCode = $previousException->getCode();
-        } else {
-            if ($throwable instanceof BusinessException) {
-                $errorMessage = $throwable->getMessage();
-                $errorCode = $throwable->getCode();
-            } else {
-                $errorMessage = 'system error';
-                $statusCode = 500;
-            }
+        $odinException = $throwable->getPrevious();
+        if ($odinException instanceof LLMException) {
+            $statusCode = $odinException->getStatusCode();
+            $errorCode = $odinException->getErrorCode();
+            $errorMessage = $odinException->getMessage();
         }
 
         $errorMessage = preg_replace('/https?:\/\/[^\s]+/', '', $errorMessage);
