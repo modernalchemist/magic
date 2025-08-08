@@ -11,7 +11,7 @@ use App\ErrorCode\MagicApiErrorCode;
 use App\Infrastructure\Core\Exception\BusinessException;
 use App\Infrastructure\Util\Context\CoContext;
 use Hyperf\HttpMessage\Stream\SwooleStream;
-use Hyperf\Odin\Exception\LLMException;
+use Hyperf\Odin\Exception\OdinException;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
@@ -25,11 +25,15 @@ class OpenAIProxyExceptionHandler extends AbstractExceptionHandler
         $errorCode = 500;
         $errorMessage = 'Internal Server Error';
 
-        $odinException = $throwable->getPrevious();
-        if ($odinException instanceof LLMException) {
-            $statusCode = $odinException->getStatusCode();
-            $errorCode = $odinException->getErrorCode();
-            $errorMessage = $odinException->getMessage();
+        $previous = $throwable->getPrevious();
+        if ($previous instanceof OdinException) {
+            $statusCode = $previous->getStatusCode();
+            $errorCode = $previous->getErrorCode();
+            $errorMessage = $previous->getMessage();
+        } elseif ($previous instanceof BusinessException) {
+            $statusCode = 400;
+            $errorCode = 400;
+            $errorMessage = $previous->getMessage();
         }
 
         $errorMessage = preg_replace('/https?:\/\/[^\s]+/', '', $errorMessage);
