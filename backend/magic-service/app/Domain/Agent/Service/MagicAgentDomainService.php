@@ -48,7 +48,7 @@ class MagicAgentDomainService
     public function getByFlowCode(string $flowCode): MagicAgentEntity
     {
         $agent = $this->agentRepository->getByFlowCode($flowCode);
-        if (empty($agent)) {
+        if ($agent === null) {
             ExceptionBuilder::throw(AgentErrorCode::VALIDATE_FAILED, 'common.not_found', ['label' => $flowCode]);
         }
         return $agent;
@@ -137,11 +137,6 @@ class MagicAgentDomainService
         return $this->agentRepository->getById($agentId);
     }
 
-    public function getEnterpriseAvailableAgentIds(string $organizationCode): array
-    {
-        return $this->agentVersionRepository->getEnterpriseAvailableAgentIds($organizationCode);
-    }
-
     public function getDefaultConversationAICodes(): array
     {
         $aiCodes = config('agent.default_conversation_ai_codes');
@@ -201,7 +196,10 @@ class MagicAgentDomainService
         $links = [];
         foreach ($orgFileKeys as $orgCode => $fileKeys) {
             $orgLinks = $this->cloudFileRepository->getLinks($orgCode, $fileKeys);
-            $links = array_merge($links, $orgLinks);
+            $links[] = $orgLinks;
+        }
+        if (! empty($links)) {
+            $links = array_merge(...$links);
         }
 
         // 替换每个助理的头像链接
